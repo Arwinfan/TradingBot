@@ -224,23 +224,32 @@ class FuturesClient:
         result['success'] = True
         return result
 
-    def close_position(self, symbol: str, side: str, quantity: float = None) -> Dict:
-        """平仓"""
+    def close_position(self, symbol: str, side: str, quantity: float = None,
+                       order_type: str = 'market', price: float = None) -> Dict:
+        """平仓
+
+        Args:
+            symbol: 交易对
+            side: long/short
+            quantity: 数量，None时自动获取全部
+            order_type: market/limit
+            price: 限价价格
+        """
         from config.settings import Config
 
-        # 重新获取最新持仓信息确保准确
-        positions = self.get_positions()
-        position_found = False
-        for p in positions:
-            if p['symbol'] == symbol:
-                quantity = p['size']
-                position_found = True
-                break
+        # 如果未指定数量，自动获取全部持仓
+        if quantity is None:
+            positions = self.get_positions()
+            position_found = False
+            for p in positions:
+                if p['symbol'] == symbol:
+                    quantity = p['size']
+                    position_found = True
+                    break
 
-        if not position_found:
-            return {'success': False, 'error': '没有持仓'}
-
-        if quantity is None or quantity <= 0:
+            if not position_found:
+                return {'success': False, 'error': '没有持仓'}
+        elif quantity <= 0:
             return {'success': False, 'error': '持仓数量无效'}
 
         # 根据交易对精度调整数量
@@ -254,8 +263,12 @@ class FuturesClient:
 
         # 平多仓：卖出，平空仓：买入
         if side == 'long':
+            if order_type == 'limit':
+                return self.limit_sell(symbol, quantity, price)
             return self.market_sell(symbol, quantity)
         else:
+            if order_type == 'limit':
+                return self.limit_buy(symbol, quantity, price)
             return self.market_buy(symbol, quantity)
 
     def limit_buy(self, symbol: str, quantity: float, price: float) -> Dict:

@@ -117,6 +117,9 @@ def close_position():
     data = request.get_json()
     symbol = data.get('symbol')
     side = data.get('side')
+    quantity = data.get('quantity')
+    order_type = data.get('type', 'market')
+    price = data.get('price')
 
     if not symbol or not side:
         return jsonify({
@@ -124,10 +127,17 @@ def close_position():
             'error': '缺少参数',
         }), 400
 
+    if order_type == 'limit' and (price is None or price <= 0):
+        return jsonify({
+            'success': False,
+            'error': '限价平仓需要指定价格',
+        }), 400
+
     client = get_futures_client()
 
     try:
-        result = client.close_position(symbol, side)
+        result = client.close_position(symbol, side, quantity=quantity,
+                                     order_type=order_type, price=price)
         if result.get('success'):
             return jsonify({
                 'success': True,
