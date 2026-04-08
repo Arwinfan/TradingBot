@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>币安量化交易系统</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            /* 暗色主题 */
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.8);
+            --bg-card-hover: rgba(17, 24, 39, 0.95);
+            --bg-glass: rgba(255, 255, 255, 0.03);
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(59, 130, 246, 0.3);
+
+            /* 渐变色 */
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --gradient-danger: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            --gradient-gold: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-blue: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+            /* 主题色 */
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+
+            /* 阴影 */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+            --shadow-glow-green: 0 0 20px rgba(16, 185, 129, 0.3);
+            --shadow-glow-red: 0 0 20px rgba(239, 68, 68, 0.3);
+            --shadow-glow-blue: 0 0 20px rgba(59, 130, 246, 0.3);
+
+            /* 圆角 */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 背景动画 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            padding: 24px 16px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 8px 24px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .sidebar-logo h5 {
+            font-weight: 700;
+            font-size: 16px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-logo span {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+        }
+
+        .sidebar-nav .nav-item {
+            margin-bottom: 4px;
+        }
+
+        .sidebar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .sidebar-nav .nav-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-glass);
+        }
+
+        .sidebar-nav .nav-link.active {
+            color: var(--text-primary);
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .sidebar-nav .nav-link i {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 16px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 13px;
+        }
+
+        .status-item:not(:last-child) {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .status-label {
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.online {
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        .status-dot.offline {
+            background: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-left: 260px;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        /* 顶部栏 */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .page-title .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .symbol-select {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 10px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            min-width: 160px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .symbol-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-glow-blue);
+        }
+
+        .btn-refresh {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 10px 20px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-refresh:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-refresh i {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-refresh:hover i {
+            transform: rotate(180deg);
+        }
+
+        /* 卡片通用样式 */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* 行情卡片 */
+        .ticker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .ticker-card {
+            padding: 16px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ticker-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .ticker-card:hover::before {
+            opacity: 1;
+        }
+
+        .ticker-card.btc::before {
+            background: var(--gradient-gold);
+        }
+
+        .ticker-card.eth::before {
+            background: var(--gradient-blue);
+        }
+
+        .ticker-card.bnb::before {
+            background: var(--gradient-primary);
+        }
+
+        .ticker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .ticker-symbol {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ticker-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .ticker-icon.btc { background: linear-gradient(135deg, #f7931a, #ffb347); }
+        .ticker-icon.eth { background: linear-gradient(135deg, #627eea, #8fa8e8); }
+        .ticker-icon.bnb { background: linear-gradient(135deg, #f3ba2f, #f5d67b); }
+
+        .ticker-name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .ticker-pair {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .ticker-change {
+            padding: 3px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .ticker-change.up {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .ticker-change.down {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+
+        .ticker-price {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .ticker-volume {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* 账户卡片 */
+        .account-card {
+            padding: 24px;
+        }
+
+        .account-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .account-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .account-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .account-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .balance-item {
+            padding: 16px 0;
+        }
+
+        .balance-item:not(:last-child) {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .balance-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .balance-value {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f9fafb, #d1d5db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .balance-value.up {
+            background: linear-gradient(135deg, var(--accent-green), #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /* 持仓卡片 */
+        .position-card {
+            padding: 24px;
+        }
+
+        .position-card .card-header {
+            padding: 0 0 16px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: transparent;
+            border: none;
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .position-card .card-header i {
+            color: var(--accent-blue);
+        }
+
+        /* K线图卡片 */
+        .chart-card {
+            margin-top: 24px;
+        }
+
+        .chart-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            background: transparent;
+            border: none;
+        }
+
+        .chart-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .chart-title i {
+            color: var(--accent-purple);
+        }
+
+        .timeframe-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .timeframe-btn {
+            padding: 8px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timeframe-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .timeframe-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        .chart-container {
+            height: 400px;
+            padding: 0 24px 24px;
+        }
+
+        /* 策略卡片 */
+        .strategy-card {
+            padding: 24px;
+        }
+
+        .strategy-card .card-header {
+            padding: 0 0 16px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: transparent;
+            border: none;
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .strategy-card .card-header i {
+            color: var(--accent-yellow);
+        }
+
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .strategy-item {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .strategy-item:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: var(--bg-card-hover);
+        }
+
+        .strategy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .strategy-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .strategy-badge {
+            padding: 4px 12px;
+            border-radius: var(--radius-xl);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .strategy-badge.running {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .strategy-badge.stopped {
+            background: rgba(107, 114, 128, 0.15);
+            color: var(--text-muted);
+        }
+
+        .strategy-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .strategy-signal {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+        }
+
+        .signal-badge {
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .signal-badge.buy {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+
+        .signal-badge.sell {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+
+        .signal-badge.hold {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+        }
+
+        /* 表格样式 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table th {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            font-size: 14px;
+        }
+
+        .data-table .price-up {
+            color: var(--accent-green);
+        }
+
+        .data-table .price-down {
+            color: var(--accent-red);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* 动画 */
+        .animate-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 80px;
+                padding: 16px 8px;
+            }
+
+            .sidebar-logo h5,
+            .sidebar-logo span,
+            .sidebar-nav .nav-link span {
+                display: none;
+            }
+
+            .sidebar-logo {
+                justify-content: center;
+                padding-bottom: 16px;
+            }
+
+            .sidebar-nav .nav-link {
+                justify-content: center;
+                padding: 12px;
+            }
+
+            .sidebar-nav .nav-link i {
+                font-size: 20px;
+            }
+
+            .sidebar-footer {
+                padding: 12px;
+            }
+
+            .main-content {
+                margin-left: 80px;
+                padding: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 280px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 80px 16px 32px;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .top-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .symbol-select {
+                flex: 1;
+            }
+
+            .btn-refresh {
+                padding: 10px 16px;
+            }
+
+            .ticker-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .ticker-card {
+                padding: 20px;
+            }
+
+            .ticker-price {
+                font-size: 24px;
+            }
+
+            .row .col-lg-4,
+            .row .col-lg-8 {
+                margin-bottom: 16px;
+            }
+
+            .chart-card .card-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .timeframe-buttons {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .timeframe-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+
+            .chart-container {
+                height: 300px;
+                padding: 0 16px 16px;
+            }
+
+            .glass-card {
+                padding: 20px;
+            }
+
+            .strategy-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* 动画延迟 */
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        /* 移动端菜单按钮 */
+        .mobile-menu-btn {
+            display: none;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex !important;
+                position: fixed;
+                top: 16px;
+                left: 16px;
+                z-index: 200;
+                width: 48px;
+                height: 48px;
+                background: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-md);
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: var(--shadow-lg);
+                color: var(--text-primary);
+                font-size: 24px;
+            }
+
+            .sidebar-overlay.mobile-open {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 80px 16px 32px;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .top-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .symbol-select {
+                flex: 1;
+            }
+
+            .btn-refresh {
+                padding: 10px 16px;
+            }
+
+            .ticker-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+
+            .ticker-card {
+                padding: 12px;
+            }
+
+            .ticker-price {
+                font-size: 14px;
+            }
+
+            .row .col-lg-4,
+            .row .col-lg-8 {
+                margin-bottom: 16px;
+            }
+
+            .chart-card .card-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .timeframe-buttons {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .timeframe-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+
+            .chart-container {
+                height: 300px;
+                padding: 0 16px 16px;
+            }
+
+            .glass-card {
+                padding: 20px;
+            }
+
+            .strategy-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 移动端菜单按钮 -->
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- 移动端遮罩层 -->
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- 侧边栏 -->
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">
+                <i class="bi bi-graph-up text-white"></i>
+            </div>
+            <div>
+                <h5>TradingBot</h5>
+                <span>量化交易系统</span>
+            </div>
+        </div>
+
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/">
+                        <i class="bi bi-grid-1x2"></i>
+                        <span>仪表盘</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/trading">
+                        <i class="bi bi-cart4"></i>
+                        <span>交易</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/settings">
+                        <i class="bi bi-gear"></i>
+                        <span>设置</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="status-item">
+                <span class="status-label">
+                    <span class="status-dot online" id="api-status-dot"></span>
+                    API状态
+                </span>
+                <span id="api-status-text" class="text-success">已连接</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">
+                    <i class="bi bi-wifi"></i>
+                    网络延迟
+                </span>
+                <span id="network-latency">-</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- 顶部栏 -->
+        <div class="top-bar animate-in">
+            <div class="page-title">
+                <div>
+                    <h1>仪表盘</h1>
+                    <p class="subtitle">实时监控您的交易资产</p>
+                </div>
+            </div>
+            <div class="top-actions">
+                <select class="symbol-select" id="symbol-select">
+                    {% for symbol in symbols %}
+                    <option value="{{ symbol }}" {% if symbol == default_symbol %}selected{% endif %}>{{ symbol }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn-refresh" onclick="refreshData()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    刷新
+                </button>
+            </div>
+        </div>
+
+        <!-- 行情卡片 -->
+        <div class="ticker-grid">
+            <div class="glass-card ticker-card btc animate-in delay-1" onclick="selectSymbol('BTCUSDT')">
+                <div class="ticker-header">
+                    <div class="ticker-symbol">
+                        <div class="ticker-icon btc">₿</div>
+                        <div>
+                            <div class="ticker-name">Bitcoin</div>
+                            <div class="ticker-pair">BTCUSDT</div>
+                        </div>
+                    </div>
+                    <span id="btc-change" class="ticker-change up">+0.00%</span>
+                </div>
+                <div class="ticker-price" id="btc-price">-</div>
+                <div class="ticker-volume">24h: <span id="btc-volume">-</span></div>
+            </div>
+
+            <div class="glass-card ticker-card eth animate-in delay-2" onclick="selectSymbol('ETHUSDT')">
+                <div class="ticker-header">
+                    <div class="ticker-symbol">
+                        <div class="ticker-icon eth">Ξ</div>
+                        <div>
+                            <div class="ticker-name">Ethereum</div>
+                            <div class="ticker-pair">ETHUSDT</div>
+                        </div>
+                    </div>
+                    <span id="eth-change" class="ticker-change up">+0.00%</span>
+                </div>
+                <div class="ticker-price" id="eth-price">-</div>
+                <div class="ticker-volume">24h: <span id="eth-volume">-</span></div>
+            </div>
+
+            <div class="glass-card ticker-card bnb animate-in delay-3" onclick="selectSymbol('BNBUSDT')">
+                <div class="ticker-header">
+                    <div class="ticker-symbol">
+                        <div class="ticker-icon bnb">B</div>
+                        <div>
+                            <div class="ticker-name">BNB</div>
+                            <div class="ticker-pair">BNBUSDT</div>
+                        </div>
+                    </div>
+                    <span id="bnb-change" class="ticker-change up">+0.00%</span>
+                </div>
+                <div class="ticker-price" id="bnb-price">-</div>
+                <div class="ticker-volume">24h: <span id="bnb-volume">-</span></div>
+            </div>
+
+            <div class="glass-card ticker-card sol animate-in delay-4" onclick="selectSymbol('SOLUSDT')">
+                <div class="ticker-header">
+                    <div class="ticker-symbol">
+                        <div class="ticker-icon sol" style="background: linear-gradient(135deg, #00ffa3, #dc1fff);">S</div>
+                        <div>
+                            <div class="ticker-name">Solana</div>
+                            <div class="ticker-pair">SOLUSDT</div>
+                        </div>
+                    </div>
+                    <span id="sol-change" class="ticker-change up">+0.00%</span>
+                </div>
+                <div class="ticker-price" id="sol-price">-</div>
+                <div class="ticker-volume">24h: <span id="sol-volume">-</span></div>
+            </div>
+
+            <div class="glass-card ticker-card xrp animate-in delay-4" onclick="selectSymbol('XRPUSDT')">
+                <div class="ticker-header">
+                    <div class="ticker-symbol">
+                        <div class="ticker-icon xrp" style="background: linear-gradient(135deg, #23292f, #000);">X</div>
+                        <div>
+                            <div class="ticker-name">XRP</div>
+                            <div class="ticker-pair">XRPUSDT</div>
+                        </div>
+                    </div>
+                    <span id="xrp-change" class="ticker-change up">+0.00%</span>
+                </div>
+                <div class="ticker-price" id="xrp-price">-</div>
+                <div class="ticker-volume">24h: <span id="xrp-volume">-</span></div>
+            </div>
+
+            <div class="glass-card ticker-card ada animate-in delay-4" onclick="selectSymbol('ADAUSDT')">
+                <div class="ticker-header">
+                    <div class="ticker-symbol">
+                        <div class="ticker-icon ada" style="background: linear-gradient(135deg, #0033ad, #1a73e8);">A</div>
+                        <div>
+                            <div class="ticker-name">Cardano</div>
+                            <div class="ticker-pair">ADAUSDT</div>
+                        </div>
+                    </div>
+                    <span id="ada-change" class="ticker-change up">+0.00%</span>
+                </div>
+                <div class="ticker-price" id="ada-price">-</div>
+                <div class="ticker-volume">24h: <span id="ada-volume">-</span></div>
+            </div>
+
+            <div class="glass-card ticker-card doge animate-in delay-4" onclick="selectSymbol('DOGEUSDT')">
+                <div class="ticker-header">
+                    <div class="ticker-symbol">
+                        <div class="ticker-icon doge" style="background: linear-gradient(135deg, #c2a633, #f5d67b);">Ð</div>
+                        <div>
+                            <div class="ticker-name">Dogecoin</div>
+                            <div class="ticker-pair">DOGEUSDT</div>
+                        </div>
+                    </div>
+                    <span id="doge-change" class="ticker-change up">+0.00%</span>
+                </div>
+                <div class="ticker-price" id="doge-price">-</div>
+                <div class="ticker-volume">24h: <span id="doge-volume">-</span></div>
+            </div>
+
+            <div class="glass-card ticker-card dot animate-in delay-4" onclick="selectSymbol('DOTUSDT')">
+                <div class="ticker-header">
+                    <div class="ticker-symbol">
+                        <div class="ticker-icon dot" style="background: linear-gradient(135deg, #e6007a, #ff68b0);">●</div>
+                        <div>
+                            <div class="ticker-name">Polkadot</div>
+                            <div class="ticker-pair">DOTUSDT</div>
+                        </div>
+                    </div>
+                    <span id="dot-change" class="ticker-change up">+0.00%</span>
+                </div>
+                <div class="ticker-price" id="dot-price">-</div>
+                <div class="ticker-volume">24h: <span id="dot-volume">-</span></div>
+            </div>
+        </div>
+
+        <!-- 账户和持仓 -->
+        <div class="row g-4">
+            <div class="col-lg-4 animate-in delay-2">
+                <div class="glass-card account-card">
+                    <div class="account-header">
+                        <div class="account-icon">
+                            <i class="bi bi-wallet2 text-white"></i>
+                        </div>
+                        <div>
+                            <div class="account-title">账户资产</div>
+                            <div class="account-subtitle">可用余额</div>
+                        </div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">可用余额 (USDT)</div>
+                        <div class="balance-value" id="balance-available">-</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">总余额 (USDT)</div>
+                        <div class="balance-value" id="balance-total">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 animate-in delay-3">
+                <div class="glass-card position-card">
+                    <div class="card-header">
+                        <i class="bi bi-briefcase"></i>
+                        当前持仓
+                    </div>
+                    <div id="positions-container">
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <p>暂无持仓</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- K线图 -->
+        <div class="glass-card chart-card animate-in delay-4">
+            <div class="card-header">
+                <div class="chart-title">
+                    <i class="bi bi-graph-up"></i>
+                    K线走势
+                </div>
+                <div class="timeframe-buttons">
+                    <button class="timeframe-btn" onclick="changeTimeframe('1m')">1m</button>
+                    <button class="timeframe-btn" onclick="changeTimeframe('5m')">5m</button>
+                    <button class="timeframe-btn active" onclick="changeTimeframe('1h')">1h</button>
+                    <button class="timeframe-btn" onclick="changeTimeframe('4h')">4h</button>
+                    <button class="timeframe-btn" onclick="changeTimeframe('1d')">1d</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="price-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- 策略状态 -->
+        <div class="glass-card strategy-card animate-in delay-4" style="margin-top: 24px;">
+            <div class="card-header">
+                <i class="bi bi-cpu"></i>
+                策略状态
+            </div>
+            <div id="strategies-container">
+                <div class="empty-state">
+                    <i class="bi bi-robot"></i>
+                    <p>暂无运行中的策略</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 交易系统JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        let currentSymbol = 'BTCUSDT';
+        let currentTimeframe = '1h';
+        let priceChart = null;
+        let refreshInterval = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            loadChart(currentSymbol, currentTimeframe);
+
+            // 每30秒刷新数据
+            refreshInterval = setInterval(loadDashboardData, 30000);
+
+            // 每60秒刷新K线
+            setInterval(() => loadChart(currentSymbol, currentTimeframe), 60000);
+        });
+
+        async function loadDashboardData() {
+            try {
+                const startTime = Date.now();
+                const response = await fetch('/api/dashboard');
+                const latency = Date.now() - startTime;
+
+                document.getElementById('network-latency').textContent = latency + 'ms';
+
+                const data = await response.json();
+
+                if (data.success) {
+                    updateTickers(data.tickers);
+                    updateBalance(data.balance);
+                    updatePositions(data.positions);
+                    updateStrategies(data.strategies);
+                    updateSystemStatus(data);
+                }
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                document.getElementById('api-status-dot').className = 'status-dot offline';
+                document.getElementById('api-status-text').textContent = '未连接';
+                document.getElementById('api-status-text').className = 'text-danger';
+            }
+        }
+
+        function updateTickers(tickers) {
+            const symbolMap = {
+                'BTCUSDT': 'btc',
+                'ETHUSDT': 'eth',
+                'BNBUSDT': 'bnb',
+                'SOLUSDT': 'sol',
+                'XRPUSDT': 'xrp',
+                'ADAUSDT': 'ada',
+                'DOGEUSDT': 'doge',
+                'DOTUSDT': 'dot'
+            };
+            const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'DOTUSDT'];
+            symbols.forEach(symbol => {
+                const ticker = tickers[symbol];
+                if (ticker) {
+                    const key = symbolMap[symbol];
+                    const price = ticker.last || 0;
+                    const change = ticker.change_percent || 0;
+                    const volume = ticker.quote_volume || 0;
+
+                    document.getElementById(`${key}-price`).textContent = formatPrice(price);
+                    const changeEl = document.getElementById(`${key}-change`);
+                    changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+                    changeEl.className = 'ticker-change ' + (change >= 0 ? 'up' : 'down');
+                    document.getElementById(`${key}-volume`).textContent = formatVolume(volume);
+                }
+            });
+        }
+
+        function updateBalance(balance) {
+            document.getElementById('balance-available').textContent = formatPrice(balance.available);
+            document.getElementById('balance-total').textContent = formatPrice(balance.total);
+        }
+
+        function updatePositions(positions) {
+            const container = document.getElementById('positions-container');
+            if (!positions || positions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <p>暂无持仓</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>交易对</th>
+                            <th>数量</th>
+                            <th>均价</th>
+                            <th>当前价</th>
+                            <th>市值</th>
+                            <th>盈亏</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            positions.forEach(pos => {
+                const pnl = pos.unrealized_pnl || 0;
+                const pnlPercent = pos.unrealized_pnl_percent || 0;
+                html += `<tr>`;
+                html += `<td><strong>${pos.symbol}</strong></td>`;
+                html += `<td>${pos.amount.toFixed(6)}</td>`;
+                html += `<td>${formatPrice(pos.avg_price)}</td>`;
+                html += `<td>${formatPrice(pos.market_value / pos.amount)}</td>`;
+                html += `<td>${formatPrice(pos.market_value)}</td>`;
+                html += `<td class="${pnl >= 0 ? 'price-up' : 'price-down'}">`;
+                html += `${pnl >= 0 ? '+' : ''}${formatPrice(pnl)} (${pnlPercent.toFixed(2)}%)`;
+                html += `</td></tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function updateStrategies(strategies) {
+            const container = document.getElementById('strategies-container');
+            if (!strategies || strategies.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-robot"></i>
+                        <p>暂无运行中的策略</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const strategyNames = {
+                'GridStrategy': '网格策略',
+                'DCAStrategy': '定投策略',
+                'TrendStrategy': '趋势策略'
+            };
+
+            const strategyDescs = {
+                'GridStrategy': '震荡行情中低买高卖',
+                'DCAStrategy': '定期定额，平均成本',
+                'TrendStrategy': 'MACD/RSI趋势跟随'
+            };
+
+            let html = '<div class="strategy-grid">';
+            strategies.forEach(strategy => {
+                const name = strategyNames[strategy.name] || strategy.name;
+                const desc = strategyDescs[strategy.name] || '';
+                const isRunning = strategy.status === 'running';
+                const signalType = strategy.last_signal?.type || 'hold';
+
+                html += `
+                    <div class="strategy-item">
+                        <div class="strategy-header">
+                            <span class="strategy-name">${name}</span>
+                            <span class="strategy-badge ${isRunning ? 'running' : 'stopped'}">
+                                ${isRunning ? '运行中' : '已停止'}
+                            </span>
+                        </div>
+                        <p class="strategy-desc">${desc}</p>
+                        <div class="strategy-signal">
+                            <span class="signal-badge ${signalType}">${signalType.toUpperCase()}</span>
+                            <small class="text-muted">${strategy.last_signal?.reason || ''}</small>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function updateSystemStatus(data) {
+            document.getElementById('api-status-dot').className = 'status-dot online';
+            document.getElementById('api-status-text').textContent = '已连接';
+            document.getElementById('api-status-text').className = 'text-success';
+        }
+
+        function refreshData() {
+            loadDashboardData();
+            loadChart(currentSymbol, currentTimeframe);
+        }
+
+        function selectSymbol(symbol) {
+            currentSymbol = symbol;
+            document.getElementById('symbol-select').value = symbol;
+            loadChart(symbol, currentTimeframe);
+        }
+
+        function changeTimeframe(tf) {
+            currentTimeframe = tf;
+            document.querySelectorAll('.timeframe-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            loadChart(currentSymbol, tf);
+        }
+
+        async function loadChart(symbol, timeframe) {
+            try {
+                const response = await fetch(`/api/kline/${symbol}?timeframe=${timeframe}&limit=100`);
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    renderChart(data.data);
+                }
+            } catch (error) {
+                console.error('加载K线失败:', error);
+            }
+        }
+
+        function renderChart(klineData) {
+            const ctx = document.getElementById('price-chart').getContext('2d');
+
+            const labels = klineData.map(k => {
+                const date = new Date(k.time * 1000);
+                return date.toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            });
+
+            const closes = klineData.map(k => k.close);
+            const volumes = klineData.map(k => k.volume);
+
+            // 计算价格变化颜色
+            const firstClose = closes[0];
+            const lastClose = closes[closes.length - 1];
+            const isUp = lastClose >= firstClose;
+            const priceColor = isUp ? '#10b981' : '#ef4444';
+            const volumeColor = isUp ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)';
+
+            if (priceChart) {
+                priceChart.destroy();
+            }
+
+            priceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '价格',
+                            data: closes,
+                            borderColor: priceColor,
+                            backgroundColor: (context) => {
+                                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                                gradient.addColorStop(0, isUp ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)');
+                                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                                return gradient;
+                            },
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: priceColor,
+                            borderWidth: 2,
+                            yAxisID: 'y',
+                        },
+                        {
+                            label: '成交量',
+                            data: volumes,
+                            type: 'bar',
+                            backgroundColor: volumeColor,
+                            borderRadius: 4,
+                            yAxisID: 'y1',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#6b7280',
+                                font: { size: 11 },
+                                maxTicksLimit: 10
+                            }
+                        },
+                        y: {
+                            position: 'left',
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#6b7280',
+                                font: { size: 11 },
+                                callback: value => formatPrice(value)
+                            }
+                        },
+                        y1: {
+                            position: 'right',
+                            grid: { display: false },
+                            ticks: {
+                                color: '#6b7280',
+                                font: { size: 11 },
+                                callback: value => formatVolume(value)
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                            titleColor: '#f9fafb',
+                            bodyColor: '#9ca3af',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.datasetIndex === 0) {
+                                        return '价格: ' + formatPrice(context.parsed.y);
+                                    } else {
+                                        return '成交量: ' + formatVolume(context.parsed.y);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            document.querySelector('.sidebar').classList.toggle('mobile-open');
+            document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
+        }
+
+        function formatPrice(price) {
+            if (!price || price === 0) return '-';
+            if (price >= 1000) return price.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (price >= 1) return price.toFixed(2);
+            return price.toFixed(6);
+        }
+
+        function formatVolume(volume) {
+            if (!volume) return '-';
+            if (volume >= 1000000000) return (volume / 1000000000).toFixed(2) + 'B';
+            if (volume >= 1000000) return (volume / 1000000).toFixed(2) + 'M';
+            if (volume >= 1000) return (volume / 1000).toFixed(2) + 'K';
+            return volume.toFixed(2);
+        }
+
+        document.getElementById('symbol-select').addEventListener('change', function() {
+            selectSymbol(this.value);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Web Framework
+Flask==3.0.0
+Flask-SocketIO==5.3.6
+flask-cors==4.0.0
+
+# Binance API
+ccxt==4.2.77
+python-binance==1.0.19
+
+# Data Processing
+pandas==2.1.4
+numpy==1.26.3
+
+# Technical Indicators
+ta==0.10.2
+
+# Database
+sqlalchemy==2.0.25
+
+# Utilities
+python-dotenv==1.0.0
+requests==2.31.0
+apscheduler==3.10.4
+
+# Frontend Dependencies (via CDN)
+# Bootstrap 5, Chart.js, etc. loaded via CDN

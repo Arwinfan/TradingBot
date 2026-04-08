@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - 币安量化交易系统</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.8);
+            --bg-card-hover: rgba(17, 24, 39, 0.95);
+            --bg-glass: rgba(255, 255, 255, 0.03);
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-color: rgba(255, 255, 255, 0.08);
+
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --gradient-danger: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --shadow-glow-green: 0 0 20px rgba(16, 185, 129, 0.3);
+            --shadow-glow-red: 0 0 20px rgba(239, 68, 68, 0.3);
+            --shadow-glow-blue: 0 0 20px rgba(59, 130, 246, 0.3);
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 260px;
+            height: 100vh;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            padding: 24px 16px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 8px 24px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px; height: 40px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .sidebar-logo h5 {
+            font-weight: 700;
+            font-size: 16px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-logo span {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .sidebar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .sidebar-nav .nav-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-glass);
+        }
+
+        .sidebar-nav .nav-link.active {
+            color: var(--text-primary);
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .sidebar-nav .nav-link i {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* 主内容 */
+        .main-content {
+            margin-left: 260px;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-header .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* 卡片 */
+        .settings-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .settings-card:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title i {
+            font-size: 20px;
+        }
+
+        .card-title.api i { color: var(--accent-yellow); }
+        .card-title.trade i { color: var(--accent-blue); }
+        .card-title.system i { color: var(--accent-purple); }
+        .card-title.data i { color: var(--accent-green); }
+        .card-title.about i { color: var(--text-secondary); }
+
+        /* 表单 */
+        .form-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background: var(--bg-secondary);
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-glow-blue);
+            color: var(--text-primary);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-check-input {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+            width: 20px;
+            height: 20px;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .form-check-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: transparent;
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .btn-outline {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-outline-danger {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            color: var(--accent-red);
+        }
+
+        .btn-outline-danger:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: var(--accent-red);
+        }
+
+        /* 提示框 */
+        .alert {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .alert-info i {
+            color: var(--accent-blue);
+        }
+
+        .alert-secondary {
+            border-left: 3px solid var(--text-muted);
+        }
+
+        /* 状态徽章 */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.online {
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        .status-dot.offline {
+            background: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
+        }
+
+        .status-dot.warning {
+            background: var(--accent-yellow);
+            box-shadow: 0 0 8px var(--accent-yellow);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            color: var(--text-secondary);
+        }
+
+        /* 系统状态 */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .status-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .status-label i {
+            font-size: 16px;
+        }
+
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-yellow);
+        }
+
+        .badge-secondary {
+            background: rgba(107, 114, 128, 0.15);
+            color: var(--text-muted);
+        }
+
+        /* 关于卡片 */
+        .about-section {
+            text-align: center;
+            padding: 32px;
+        }
+
+        .about-logo {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 20px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .about-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .about-version {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .about-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto 32px;
+            line-height: 1.6;
+        }
+
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .tech-tag {
+            padding: 6px 14px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .feature-list {
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-item i {
+            color: var(--accent-green);
+            font-size: 16px;
+        }
+
+        /* 动画 */
+        .animate-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        /* 响应式 - 移动端适配 */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 80px;
+                padding: 16px 8px;
+            }
+
+            .sidebar-logo h5, .sidebar-logo span, .sidebar-nav .nav-link span {
+                display: none;
+            }
+
+            .sidebar-logo { justify-content: center; padding-bottom: 16px; }
+            .sidebar-nav .nav-link { justify-content: center; padding: 12px; }
+            .sidebar-nav .nav-link i { font-size: 20px; }
+
+            .main-content { margin-left: 80px; padding: 24px; }
+        }
+
+        /* 移动端菜单 */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 200;
+            width: 48px;
+            height: 48px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            color: var(--text-primary);
+            font-size: 24px;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 99;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.mobile-open {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 80px 16px 32px;
+            }
+
+            .page-header h1 {
+                font-size: 24px;
+            }
+
+            .settings-card {
+                padding: 20px;
+                margin-bottom: 16px;
+            }
+
+            .card-title {
+                font-size: 16px;
+                margin-bottom: 16px;
+                padding-bottom: 12px;
+            }
+
+            .form-control, .form-select {
+                padding: 14px 16px;
+                font-size: 16px; /* 防止iOS缩放 */
+            }
+
+            .btn {
+                padding: 14px 20px;
+                font-size: 15px;
+                min-height: 48px; /* 触控友好 */
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .status-item {
+                padding: 12px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .about-section {
+                padding: 20px;
+            }
+
+            .about-logo {
+                width: 64px;
+                height: 64px;
+                font-size: 28px;
+            }
+
+            .about-title {
+                font-size: 20px;
+            }
+
+            .tech-tags {
+                gap: 6px;
+            }
+
+            .tech-tag {
+                padding: 4px 10px;
+                font-size: 11px;
+            }
+
+            .feature-list {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .row .col-lg-6 {
+                margin-bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 移动端菜单按钮 -->
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- 移动端遮罩层 -->
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- 侧边栏 -->
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">
+                <i class="bi bi-graph-up text-white"></i>
+            </div>
+            <div>
+                <h5>TradingBot</h5>
+                <span>量化交易系统</span>
+            </div>
+        </div>
+        <ul class="nav flex-column sidebar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="/">
+                    <i class="bi bi-grid-1x2"></i>
+                    <span>仪表盘</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/trading">
+                    <i class="bi bi-cart4"></i>
+                    <span>交易</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="/settings">
+                    <i class="bi bi-gear"></i>
+                    <span>设置</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <div class="page-header animate-in">
+            <h1>系统设置</h1>
+            <p class="subtitle">配置API密钥和交易参数</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 animate-in delay-1">
+                <!-- API配置 -->
+                <div class="settings-card">
+                    <div class="card-title api">
+                        <i class="bi bi-key"></i>
+                        API配置
+                    </div>
+
+                    <div class="alert alert-info">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-info-circle"></i>
+                            <small>API密钥将存储在环境变量中，不会明文保存。建议使用测试网密钥进行测试。</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">API Key</label>
+                        <input type="password" class="form-control" id="api-key"
+                               placeholder="请输入API Key" autocomplete="off">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">API Secret</label>
+                        <input type="password" class="form-control" id="api-secret"
+                               placeholder="请输入API Secret" autocomplete="off">
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="use-testnet" checked>
+                            <label class="form-check-label" for="use-testnet">使用测试网 (Testnet)</label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success" onclick="saveApiKey()">
+                            <i class="bi bi-check-lg"></i>保存
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteApiKey()">
+                            <i class="bi bi-trash"></i>删除
+                        </button>
+                    </div>
+
+                    <div class="mt-3" id="api-status">
+                        <div class="status-badge">
+                            <span class="status-dot offline"></span>
+                            <span class="status-text">API未配置</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 animate-in delay-2">
+                <!-- 交易配置 -->
+                <div class="settings-card">
+                    <div class="card-title trade">
+                        <i class="bi bi-shield-check"></i>
+                        交易配置
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">单笔最大金额 (USDT)</label>
+                        <input type="number" class="form-control" id="max-trade-amount" value="1000">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">单币种最大持仓 (USDT)</label>
+                        <input type="number" class="form-control" id="max-position" value="5000">
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="strategy-enabled" checked>
+                            <label class="form-check-label" for="strategy-enabled">启用策略自动执行</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">策略执行间隔 (秒)</label>
+                        <input type="number" class="form-control" id="strategy-interval" value="60">
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveTradeConfig()">
+                        <i class="bi bi-check-lg"></i>保存配置
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-lg-6 animate-in delay-3">
+                <!-- 系统状态 -->
+                <div class="settings-card">
+                    <div class="card-title system">
+                        <i class="bi bi-pc-display"></i>
+                        系统状态
+                    </div>
+
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span class="status-label">
+                                <i class="bi bi-cloud"></i>
+                                API连接
+                            </span>
+                            <span class="badge-status badge-secondary" id="status-api">检查中...</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">
+                                <i class="bi bi-database"></i>
+                                数据库
+                            </span>
+                            <span class="badge-status badge-secondary" id="status-db">检查中...</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">
+                                <i class="bi bi-wifi"></i>
+                                测试网模式
+                            </span>
+                            <span class="badge-status badge-secondary" id="status-testnet">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">
+                                <i class="bi bi-cpu"></i>
+                                策略引擎
+                            </span>
+                            <span class="badge-status badge-secondary" id="status-engine">-</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline mt-4" onclick="checkSystemStatus()">
+                        <i class="bi bi-arrow-clockwise"></i>刷新状态
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-lg-6 animate-in delay-4">
+                <!-- 数据管理 -->
+                <div class="settings-card">
+                    <div class="card-title data">
+                        <i class="bi bi-database"></i>
+                        数据管理
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">清理旧日志 (保留天数)</label>
+                        <div class="d-flex gap-2">
+                            <input type="number" class="form-control" id="log-days" value="30" style="width: 100px;">
+                            <button class="btn btn-outline-danger" onclick="cleanupLogs()">
+                                <i class="bi bi-trash"></i>清理
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-secondary">
+                        <small class="text-muted">
+                            清理操作将删除超过指定天数的系统日志，不会影响交易记录和策略数据。
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 animate-in delay-4">
+                <!-- 关于 -->
+                <div class="settings-card">
+                    <div class="card-title about">
+                        <i class="bi bi-info-circle"></i>
+                        关于
+                    </div>
+
+                    <div class="about-section">
+                        <div class="about-logo">
+                            <i class="bi bi-graph-up text-white"></i>
+                        </div>
+                        <h2 class="about-title">币安量化交易系统</h2>
+                        <p class="about-version">版本 1.0.0</p>
+                        <p class="about-desc">
+                            基于 Flask 的币安量化交易平台，提供实时行情监控、策略交易和风险管理功能。
+                        </p>
+
+                        <div class="tech-tags">
+                            <span class="tech-tag">Flask</span>
+                            <span class="tech-tag">CCXT</span>
+                            <span class="tech-tag">SQLite</span>
+                            <span class="tech-tag">Bootstrap 5</span>
+                            <span class="tech-tag">Chart.js</span>
+                            <span class="tech-tag">WebSocket</span>
+                        </div>
+
+                        <div class="feature-list">
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>实时行情监控</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>多种交易策略 (网格、定投、趋势)</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>风险管理和止损机制</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Web界面管理</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>交易记录和统计分析</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            document.querySelector('.sidebar').classList.toggle('mobile-open');
+            document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfig();
+            checkSystemStatus();
+        });
+
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+
+                if (data.success) {
+                    const config = data.config;
+                    document.getElementById('use-testnet').checked = config.use_testnet;
+                    document.getElementById('max-trade-amount').value = config.max_trade_amount;
+                    document.getElementById('max-position').value = config.max_position_per_symbol;
+                    document.getElementById('strategy-enabled').checked = config.strategy_enabled;
+                    document.getElementById('strategy-interval').value = config.strategy_interval;
+
+                    const statusEl = document.getElementById('api-status');
+                    if (config.api_configured) {
+                        statusEl.innerHTML = `
+                            <div class="status-badge">
+                                <span class="status-dot online"></span>
+                                <span class="status-text">API已配置</span>
+                            </div>
+                        `;
+                    } else {
+                        statusEl.innerHTML = `
+                            <div class="status-badge">
+                                <span class="status-dot warning"></span>
+                                <span class="status-text">API未配置</span>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('加载配置失败:', error);
+            }
+        }
+
+        async function saveApiKey() {
+            const apiKey = document.getElementById('api-key').value;
+            const apiSecret = document.getElementById('api-secret').value;
+            const useTestnet = document.getElementById('use-testnet').checked;
+
+            if (!apiKey || !apiSecret) {
+                alert('请输入完整的API密钥');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/api-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        api_key: apiKey,
+                        api_secret: apiSecret
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    await fetch('/api/config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            USE_TESTNET: useTestnet
+                        })
+                    });
+
+                    alert('API配置已保存');
+                    document.getElementById('api-key').value = '';
+                    document.getElementById('api-secret').value = '';
+                    document.getElementById('api-status').innerHTML = `
+                        <div class="status-badge">
+                            <span class="status-dot online"></span>
+                            <span class="status-text">API已配置</span>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                alert('保存失败: ' + error);
+            }
+        }
+
+        async function deleteApiKey() {
+            if (!confirm('确定要删除API密钥吗？')) return;
+
+            try {
+                const response = await fetch('/api/api-key', { method: 'DELETE' });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('API密钥已删除');
+                    document.getElementById('api-status').innerHTML = `
+                        <div class="status-badge">
+                            <span class="status-dot warning"></span>
+                            <span class="status-text">API未配置</span>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                alert('删除失败: ' + error);
+            }
+        }
+
+        async function saveTradeConfig() {
+            const maxTradeAmount = parseFloat(document.getElementById('max-trade-amount').value);
+            const maxPosition = parseFloat(document.getElementById('max-position').value);
+            const strategyEnabled = document.getElementById('strategy-enabled').checked;
+            const strategyInterval = parseInt(document.getElementById('strategy-interval').value);
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        MAX_TRADE_AMOUNT: maxTradeAmount,
+                        MAX_POSITION_PER_SYMBOL: maxPosition,
+                        STRATEGY_ENABLED: strategyEnabled,
+                        STRATEGY_INTERVAL: strategyInterval
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('配置已保存');
+                }
+            } catch (error) {
+                alert('保存失败: ' + error);
+            }
+        }
+
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch('/api/system/status');
+                const data = await response.json();
+
+                if (data.success) {
+                    const status = data.status;
+
+                    const apiEl = document.getElementById('status-api');
+                    if (status.api.configured) {
+                        apiEl.className = 'badge-status ' + (status.api.connected ? 'badge-success' : 'badge-warning');
+                        apiEl.textContent = status.api.connected ? '已连接' : '未连接';
+                    } else {
+                        apiEl.className = 'badge-status badge-secondary';
+                        apiEl.textContent = '未配置';
+                    }
+
+                    const dbEl = document.getElementById('status-db');
+                    dbEl.className = 'badge-status ' + (status.database.connected ? 'badge-success' : 'badge-danger');
+                    dbEl.textContent = status.database.connected ? '正常' : '异常';
+
+                    const testnetEl = document.getElementById('status-testnet');
+                    testnetEl.className = 'badge-status ' + (status.testnet_mode ? 'badge-warning' : 'badge-secondary');
+                    testnetEl.textContent = status.testnet_mode ? '开启' : '关闭';
+
+                    const engineEl = document.getElementById('status-engine');
+                    engineEl.className = 'badge-status ' + (status.strategy_enabled ? 'badge-success' : 'badge-secondary');
+                    engineEl.textContent = status.strategy_enabled ? '已启用' : '已禁用';
+                }
+            } catch (error) {
+                console.error('检查状态失败:', error);
+            }
+        }
+
+        async function cleanupLogs() {
+            const days = parseInt(document.getElementById('log-days').value);
+
+            if (!confirm(`确定要清理 ${days} 天前的日志吗？`)) return;
+
+            try {
+                const response = await fetch('/api/database/cleanup?days=' + days, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('清理失败: ' + error);
+            }
+        }
+    </script>
+</body>
+</html>

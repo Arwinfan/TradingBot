@@ -1,0 +1,4464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingBot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.8);
+            --bg-card-hover: rgba(17, 24, 39, 0.95);
+            --bg-glass: rgba(255, 255, 255, 0.03);
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-color: rgba(255, 255, 255, 0.08);
+
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --gradient-danger: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --shadow-glow-green: 0 0 20px rgba(16, 185, 129, 0.3);
+            --shadow-glow-red: 0 0 20px rgba(239, 68, 68, 0.3);
+            --shadow-glow-blue: 0 0 20px rgba(59, 130, 246, 0.3);
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 260px;
+            height: 100vh;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            padding: 24px 16px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 8px 24px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px; height: 40px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .sidebar-logo h5 {
+            font-weight: 700;
+            font-size: 16px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-logo span {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .sidebar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .sidebar-nav .nav-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-glass);
+        }
+
+        .sidebar-nav .nav-link.active {
+            color: var(--text-primary);
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .sidebar-nav .nav-link i {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* 主内容 */
+        .main-content {
+            margin-left: 260px;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-header .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* 标签页 */
+        .nav-tabs-custom {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        .tab-btn i {
+            font-size: 16px;
+        }
+
+        /* 卡片 */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            background: var(--bg-card-hover);
+        }
+
+        /* 交易面板 */
+        .trade-panel {
+            padding: 28px;
+        }
+
+        .trade-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .trade-panel-icon {
+            width: 48px; height: 48px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .trade-panel-title {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .trade-panel-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .trade-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .amount-btn {
+            padding: 10px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .amount-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .market-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: var(--bg-secondary);
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-glow-blue);
+            color: var(--text-primary);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* 价格显示 */
+        .current-price-display {
+            text-align: center;
+            padding: 24px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+        }
+
+        .price-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .price-value {
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .price-value.up { color: var(--accent-green); }
+        .price-value.down { color: var(--accent-red); }
+
+        /* 买入/卖出按钮 */
+        .trade-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .btn-trade {
+            padding: 16px 24px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-buy {
+            background: var(--accent-green);
+            color: white;
+            box-shadow: var(--shadow-glow-green);
+        }
+
+        .btn-buy:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-sell {
+            background: var(--accent-red);
+            color: white;
+            box-shadow: var(--shadow-glow-red);
+        }
+
+        .btn-sell:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-trade i {
+            font-size: 18px;
+        }
+
+        /* 市场信息 */
+        .market-panel {
+            padding: 24px;
+        }
+
+        .market-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .stat-item {
+            padding: 16px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* 持仓 */
+        .position-panel {
+            padding: 24px;
+        }
+
+        .position-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .position-header i {
+            color: var(--accent-blue);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Toast 通知系统 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            min-width: 280px;
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: toast-in 0.3s ease;
+        }
+
+        .toast.toast-success {
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .toast.toast-error {
+            border-left: 4px solid var(--accent-red);
+        }
+
+        .toast.toast-info {
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .toast-success .toast-icon { color: var(--accent-green); }
+        .toast-error .toast-icon { color: var(--accent-red); }
+        .toast-info .toast-icon { color: var(--accent-blue); }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .toast-message {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .toast-close:hover {
+            color: var(--text-primary);
+        }
+
+        @keyframes toast-in {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes toast-out {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+        }
+
+        /* 策略卡片 */
+        .strategy-card {
+            padding: 24px;
+            height: 100%;
+        }
+
+        .strategy-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 0 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: transparent;
+            border: none;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .strategy-card .card-header i {
+            color: var(--accent-purple);
+        }
+
+        /* 策略卡片 - 新版布局 */
+        .strategies-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            align-items: stretch;
+            width: 100%;
+            min-width: 600px;
+        }
+
+        .strategy-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .strategy-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .strategy-card.running {
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .strategy-card.running::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-green), #38ef7d);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* 加载动画 */
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .strategy-card-header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-height: 80px;
+        }
+
+        .strategy-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .strategy-icon.grid { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .strategy-icon.dca { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .strategy-icon.trend { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .strategy-icon.funding { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .strategy-icon.scalping { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .strategy-icon.adaptive { background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); }
+
+        /* 运行指示器 */
+        .running-indicator {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            border: 2px solid var(--bg-primary);
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+            }
+        }
+
+        .strategy-card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .strategy-card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .strategy-card-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .strategy-status-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .strategy-status-badge.running {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+
+        .strategy-status-badge.stopped {
+            background: rgba(107, 114, 128, 0.2);
+            color: var(--text-muted);
+        }
+
+        .strategy-card-symbol {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .strategy-card-symbol i {
+            color: var(--accent-blue);
+            font-size: 11px;
+        }
+
+        /* 快捷操作按钮 */
+        .strategy-card-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .btn-quick-action {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-quick-action.start {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+
+        .btn-quick-action.start:hover {
+            background: var(--accent-green);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .btn-quick-action.stop {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+
+        .btn-quick-action.stop:hover {
+            background: var(--accent-red);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .strategy-card-detail-hint {
+            margin-left: auto;
+            color: var(--text-muted);
+            font-size: 18px;
+            opacity: 0.5;
+            transition: all 0.2s;
+        }
+
+        .strategy-card:hover .strategy-card-detail-hint {
+            opacity: 1;
+            transform: translateX(4px);
+            color: var(--accent-blue);
+        }
+
+        .strategy-card-body {
+            padding: 16px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .strategy-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+            min-height: 42px;
+        }
+
+        .strategy-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .strategy-params-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .param-tag {
+            background: rgba(102, 126, 234, 0.15);
+            color: var(--text-secondary);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .strategy-stat {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            transition: all 0.2s;
+        }
+
+        .strategy-stat:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .strategy-stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .strategy-stat-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .strategy-stat-value.positive { color: var(--accent-green); }
+        .strategy-stat-value.negative { color: var(--accent-red); }
+
+        .strategy-card-footer {
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .strategy-actions {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 38px;
+        }
+
+        .btn-action:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-action.start {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: var(--accent-green);
+        }
+
+        .btn-action.start:hover {
+            background: rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-action.stop {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: var(--accent-red);
+        }
+
+        .btn-action.stop:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-action.running {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4);
+            color: var(--accent-blue);
+        }
+
+        /* 详情和运行按钮 */
+        .btn-action.btn-detail {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: var(--accent-blue);
+        }
+
+        .btn-action.btn-detail:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-action.btn-run {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+            color: var(--accent-purple);
+        }
+
+        .btn-action.btn-run:hover:not(:disabled) {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: var(--accent-purple);
+        }
+
+        .btn-action.btn-run:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-action.btn-detail,
+        .btn-action.btn-run {
+            flex: 1;
+        }
+
+        /* 卡片展开图标 */
+        .strategy-card-expand {
+            margin-left: auto;
+            color: var(--text-muted);
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .strategy-card.expanded .strategy-card-expand {
+            transform: rotate(180deg);
+        }
+
+        .strategy-card-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 策略列表视图 */
+        .strategy-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+        }
+
+        .strategy-list-header h4 {
+            margin: 0 0 4px 0;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .strategy-list-header h4 i {
+            color: var(--accent-blue);
+        }
+
+        .strategy-list-header p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .strategy-list-grid {
+            padding: 24px;
+        }
+
+        /* 策略列表卡片 */
+        .strategy-list-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .strategy-list-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--card-accent, var(--accent-blue));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .strategy-list-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .strategy-list-card:hover::before {
+            opacity: 1;
+        }
+
+        .strategy-list-card.running::before {
+            opacity: 1;
+            animation: pulse-bar 2s infinite;
+        }
+
+        @keyframes pulse-bar {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .strategy-list-card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .strategy-list-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .strategy-list-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .strategy-list-name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .strategy-list-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .strategy-list-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .strategy-list-symbol {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .strategy-list-symbol span {
+            color: var(--accent-blue);
+            font-weight: 500;
+        }
+
+        /* 策略详情视图 */
+        .strategy-detail-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+        }
+
+        .btn-back {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 16px;
+            padding: 0;
+            transition: color 0.2s;
+        }
+
+        .btn-back:hover {
+            color: var(--text-primary);
+        }
+
+        .strategy-detail-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .strategy-detail-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+        }
+
+        .strategy-detail-title h3 {
+            margin: 0 0 6px 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .strategy-detail-content {
+            padding: 24px;
+        }
+
+        /* 详情内容区块 */
+        .detail-section {
+            margin-bottom: 28px;
+        }
+
+        .detail-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-section-title i {
+            color: var(--accent-blue);
+        }
+
+        .detail-section-content {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .detail-section-content ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .detail-section-content li {
+            margin-bottom: 6px;
+        }
+
+        /* 运行统计 */
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .stat-item {
+            background: var(--bg-glass);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-value.positive {
+            color: var(--accent-green);
+        }
+
+        .stat-value.negative {
+            color: var(--accent-red);
+        }
+
+        /* 日志列表 */
+        .logs-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .logs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .log-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-sm);
+            transition: background 0.2s;
+        }
+
+        .log-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .log-side {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .log-side.positive {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .log-side.negative {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+
+        .log-info {
+            flex: 1;
+            display: flex;
+            gap: 12px;
+        }
+
+        .log-symbol {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .log-amount {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .log-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .log-total {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .log-date {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .loading-state, .empty-state {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+        }
+
+        .loading-state i, .empty-state i {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* 风险提示 */
+        .risk-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            margin-top: 10px;
+        }
+
+        .risk-warning-title {
+            color: var(--accent-yellow);
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 参数表格 */
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .param-table th,
+        .param-table td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+
+        .param-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .param-table td:first-child {
+            font-weight: 500;
+            color: var(--text-primary);
+            width: 35%;
+        }
+
+        .param-table td:nth-child(2) {
+            color: var(--accent-blue);
+            font-family: monospace;
+            width: 25%;
+        }
+
+        /* 参数输入 */
+        .param-input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .param-input-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .param-input-item:focus-within {
+            border-color: var(--accent-blue);
+        }
+
+        .param-input-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .param-input-name {
+            font-weight: 500;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .param-input-name small {
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        .param-input-range {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .param-input-field {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .param-input-field:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .param-input-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* 推荐参数 */
+        .param-preset {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .param-preset-btn {
+            padding: 4px 10px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .param-preset-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .param-preset-btn.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        /* 保存按钮 */
+        .btn-save {
+            padding: 8px 20px;
+            background: var(--accent-blue);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-save:hover {
+            background: var(--accent-blue-hover, #3b82f6);
+            transform: translateY(-1px);
+        }
+
+        .btn-save:active {
+            transform: translateY(0);
+        }
+
+        /* 参数表单容器 */
+        .param-form-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .param-form-container .param-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .param-form-container .param-item label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .param-form-container .param-item input {
+            padding: 8px 12px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .param-form-container .param-item input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: var(--bg-elevated);
+        }
+
+        .param-form-container .param-item select {
+            padding: 8px 12px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .param-form-container .param-item select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: var(--bg-elevated);
+        }
+
+        /* 操作按钮 */
+        .detail-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-detail {
+            flex: 1;
+            padding: 14px 24px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-detail-primary {
+            background: var(--accent-green);
+            border: none;
+            color: white;
+        }
+
+        .btn-detail-primary:hover {
+            background: #0d9668;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-detail-danger {
+            background: var(--accent-red);
+            border: none;
+            color: white;
+        }
+
+        .btn-detail-danger:hover {
+            background: #dc2626;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-detail-secondary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-detail-secondary:hover {
+            border-color: var(--accent-blue);
+        }
+
+        /* 兼容旧样式 */
+        .strategy-item {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .strategy-item:last-child { margin-bottom: 0; }
+        .strategy-item:hover { border-color: rgba(255, 255, 255, 0.15); }
+
+        .strategy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .strategy-name { font-weight: 600; font-size: 15px; }
+
+        .strategy-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .strategy-badge.running {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .strategy-badge.stopped {
+            background: rgba(107, 114, 128, 0.15);
+            color: var(--text-muted);
+        }
+
+        /* 表格 */
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .orders-table th,
+        .orders-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .orders-table th {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .orders-table td {
+            font-size: 14px;
+        }
+
+        .btn-cancel {
+            padding: 6px 12px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--radius-sm);
+            color: var(--accent-red);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        /* 动画 */
+        .animate-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+
+        /* 策略详情展开面板 - 嵌入式 */
+        .strategy-detail-panel {
+            display: none;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 20px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .strategy-detail-panel.active {
+            display: block;
+        }
+
+        .strategy-detail-panel .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .strategy-detail-panel .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .strategy-detail-panel .panel-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .strategy-detail-panel .panel-close:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .strategy-detail-panel .panel-content {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .strategy-detail-panel .indicator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .strategy-detail-panel .indicator-box {
+            background: var(--bg-glass);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            text-align: center;
+        }
+
+        .strategy-detail-panel .indicator-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .strategy-detail-panel .indicator-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .strategy-detail-panel .param-form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .strategy-detail-panel .param-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .strategy-detail-panel .param-item label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .strategy-detail-panel .param-item input,
+        .strategy-detail-panel .param-item select {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+
+        .strategy-detail-panel .param-presets {
+            display: flex;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .strategy-detail-panel .param-preset-btn {
+            padding: 6px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            background: var(--bg-glass);
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .strategy-detail-panel .param-preset-btn:hover,
+        .strategy-detail-panel .param-preset-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        /* 策略详情视图样式 */
+        .strategy-detail-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .strategy-detail-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+        }
+
+        .strategy-detail-title h3 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .strategy-detail-content {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+        }
+
+        .detail-section {
+            margin-bottom: 24px;
+        }
+
+        .detail-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-section-title i {
+            color: var(--accent-blue);
+        }
+
+        .detail-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .detail-box {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            white-space: pre-line;
+        }
+
+        .detail-box.suitable {
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .detail-box.risk {
+            border-left: 3px solid var(--accent-yellow);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        /* 模态框 - 保留但不用 */
+        .modal-overlay {
+            display: none;
+        }
+        .modal-title { font-size: 1.25rem; font-weight: 600; }
+        .modal-close {
+            background: none; border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem; cursor: pointer;
+        }
+        .modal-close:hover { color: var(--text-primary); }
+        .param-group { margin-bottom: 16px; }
+        .param-label {
+            display: block; color: var(--text-secondary);
+            font-size: 0.875rem; margin-bottom: 6px;
+        }
+        .param-input {
+            width: 100%; padding: 10px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary); font-size: 0.95rem;
+        }
+        .param-input:focus { outline: none; border-color: var(--accent-blue); }
+        .param-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .indicator-box {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            padding: 12px; margin-bottom: 12px;
+        }
+        .indicator-name { color: var(--text-secondary); font-size: 0.875rem; }
+        .indicator-value { color: var(--accent-blue); font-size: 1.25rem; font-weight: 600; }
+        .modal-footer {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex; gap: 12px; justify-content: flex-end;
+        }
+        .btn-modal {
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            border: none; cursor: pointer;
+            font-weight: 500; transition: all 0.3s;
+        }
+        .btn-modal-primary {
+            background: var(--accent-blue); color: white;
+        }
+        .btn-modal-primary:hover { background: #2563eb; }
+        .btn-modal-secondary {
+            background: var(--bg-secondary); color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        /* 响应式设计 - 移动端适配 */
+        @media (max-width: 768px) {
+            /* 移动端菜单按钮 */
+            .mobile-menu-btn {
+                display: flex !important;
+                position: fixed;
+                top: 16px;
+                left: 16px;
+                z-index: 200;
+                width: 44px;
+                height: 44px;
+                background: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-md);
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: var(--shadow-lg);
+            }
+
+            /* 侧边栏移动端适配 */
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 280px;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+            }
+
+            .sidebar-overlay.mobile-open {
+                display: block;
+            }
+
+            /* 主内容移动端 */
+            .main-content {
+                margin-left: 0;
+                padding: 80px 16px 32px;
+            }
+
+            .page-header h1 {
+                font-size: 24px;
+            }
+
+            /* 标签页移动端 */
+            .nav-tabs-custom {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 12px;
+            }
+
+            .tab-btn {
+                padding: 10px 16px;
+                font-size: 13px;
+                white-space: nowrap;
+            }
+
+            /* 策略网格移动端 - 2列 */
+            .strategies-grid {
+                grid-template-columns: repeat(2, 1fr);
+                min-width: 0;
+                gap: 10px;
+            }
+
+            /* 策略卡片移动端 - 紧凑 */
+            .strategy-card {
+                margin-bottom: 0;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .strategy-card-header {
+                padding: 10px;
+                gap: 8px;
+                min-height: auto;
+            }
+
+            .strategy-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+
+            .strategy-card-title {
+                font-size: 12px;
+                gap: 4px;
+            }
+
+            .strategy-card-name {
+                font-size: 12px;
+            }
+
+            .strategy-status-badge {
+                font-size: 8px;
+                padding: 2px 5px;
+            }
+
+            .strategy-card-symbol {
+                font-size: 9px;
+            }
+
+            .strategy-card-body {
+                padding: 8px 10px;
+                flex: 1;
+            }
+
+            .strategy-desc {
+                display: none;
+            }
+
+            .strategy-stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 4px;
+            }
+
+            .strategy-stat {
+                padding: 5px 6px;
+            }
+
+            .strategy-stat-label {
+                font-size: 8px;
+            }
+
+            .strategy-stat-value {
+                font-size: 11px;
+            }
+
+            .strategy-params-summary {
+                gap: 3px;
+                flex-wrap: wrap;
+            }
+
+            .param-tag {
+                font-size: 9px;
+                padding: 1px 4px;
+            }
+
+            .strategy-card-footer {
+                padding: 8px 10px;
+            }
+
+            .strategy-card-footer .btn-action {
+                padding: 6px 8px;
+                font-size: 11px;
+                height: 32px;
+            }
+
+            .strategy-card-footer .btn-action i {
+                font-size: 12px;
+            }
+
+            .strategy-card-expand {
+                display: none;
+            }
+
+            /* 表单移动端 */
+            .param-form-container {
+                grid-template-columns: 1fr;
+            }
+
+            .param-item {
+                padding: 12px;
+            }
+
+            .param-presets {
+                flex-wrap: wrap;
+            }
+
+            .param-preset-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            /* 模态框移动端 */
+            .strategy-detail-modal {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                border-radius: 16px 16px 0 0;
+                max-height: 90vh;
+                bottom: 0;
+                top: auto;
+            }
+
+            .detail-section {
+                padding: 16px;
+            }
+
+            .stats-summary {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .btn-save {
+                width: 100%;
+            }
+
+            /* 市场数据网格 */
+            .market-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .market-card {
+                padding: 16px;
+            }
+
+            /* 日志列表移动端 */
+            .logs-list {
+                gap: 8px;
+            }
+
+            .log-item {
+                padding: 12px;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .log-info {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            /* 买入卖出表单移动端 */
+            .trade-form {
+                padding: 16px;
+            }
+
+            .trade-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .amount-btn {
+                padding: 8px;
+                font-size: 12px;
+            }
+        }
+
+        /* 平板适配 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .strategies-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                width: 220px;
+            }
+
+            .main-content {
+                margin-left: 220px;
+                padding: 24px;
+            }
+        }
+
+        /* 默认隐藏移动端菜单按钮 */
+        .mobile-menu-btn {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 移动端菜单按钮 -->
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <i class="bi bi-list" style="font-size: 24px;"></i>
+    </button>
+
+    <!-- 移动端遮罩层 -->
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- 侧边栏 -->
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">
+                <i class="bi bi-graph-up text-white"></i>
+            </div>
+            <div>
+                <h5>TradingBot</h5>
+            </div>
+        </div>
+        <ul class="nav flex-column sidebar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="/">
+                    <i class="bi bi-grid-1x2"></i>
+                    <span>仪表盘</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="/trading">
+                    <i class="bi bi-cart4"></i>
+                    <span>交易</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/settings">
+                    <i class="bi bi-gear"></i>
+                    <span>设置</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <div class="page-header animate-in">
+            <h1>交易</h1>
+            <p class="subtitle">执行交易和管理订单</p>
+        </div>
+
+        <!-- 标签页 -->
+        <div class="nav-tabs-custom animate-in delay-1">
+            <button class="tab-btn active" onclick="switchTab('manual', this)">
+                <i class="bi bi-lightning"></i>手动交易
+            </button>
+            <button class="tab-btn" onclick="switchTab('strategies', this)">
+                <i class="bi bi-cpu"></i>策略交易
+            </button>
+            <button class="tab-btn" onclick="switchTab('orders', this)">
+                <i class="bi bi-list-ul"></i>订单管理
+            </button>
+        </div>
+
+        <!-- 手动交易 -->
+        <div id="tab-manual" class="tab-content animate-in delay-2">
+            <div class="row g-4">
+                <!-- 交易面板 -->
+                <div class="col-lg-4">
+                    <div class="glass-card trade-panel">
+                        <div class="trade-panel-header">
+                            <div class="trade-panel-icon">
+                                <i class="bi bi-lightning text-white"></i>
+                            </div>
+                            <div>
+                                <div class="trade-panel-title">快速交易</div>
+                                <div class="trade-panel-subtitle">市价单 / 限价单</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">交易对</label>
+                            <select class="form-select" id="trade-symbol">
+                                {% for symbol in symbols %}
+                                <option value="{{ symbol }}">{{ symbol }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="current-price-display">
+                            <div class="price-label">当前价格</div>
+                            <div class="price-value" id="current-price">-</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">订单类型</label>
+                            <select class="form-select" id="order-type">
+                                <option value="market">市价单</option>
+                                <option value="limit">限价单</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="limit-price-group" style="display: none;">
+                            <label class="form-label">限价价格</label>
+                            <input type="number" class="form-control" id="limit-price" step="0.01" placeholder="输入价格">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">数量</label>
+                            <input type="number" class="form-control" id="trade-amount" step="0.0001" placeholder="输入数量">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">金额 (USDT)</label>
+                            <input type="number" class="form-control" id="trade-value" step="0.01" placeholder="输入金额">
+                        </div>
+
+                        <div class="trade-buttons">
+                            <button class="btn-trade btn-buy" onclick="placeOrder('buy')">
+                                <i class="bi bi-arrow-up-circle"></i>买入
+                            </button>
+                            <button class="btn-trade btn-sell" onclick="placeOrder('sell')">
+                                <i class="bi bi-arrow-down-circle"></i>卖出
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 市场信息 -->
+                <div class="col-lg-8">
+                    <div class="glass-card market-panel mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 style="font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                                <i class="bi bi-graph-up" style="color: var(--accent-purple);"></i>
+                                实时行情
+                            </h5>
+                            <select class="form-select w-auto" id="market-symbol" style="min-width: 140px;">
+                                {% for symbol in symbols %}
+                                <option value="{{ symbol }}">{{ symbol }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="market-stats">
+                            <div class="stat-item">
+                                <div class="stat-label">最新价</div>
+                                <div class="stat-value" id="market-price">-</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">24h最高</div>
+                                <div class="stat-value" id="market-high">-</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">24h最低</div>
+                                <div class="stat-value" id="market-low">-</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">24h成交量</div>
+                                <div class="stat-value" id="market-volume">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card position-panel">
+                        <div class="position-header">
+                            <i class="bi bi-briefcase"></i>
+                            当前持仓
+                        </div>
+                        <div id="position-info">
+                            <div class="empty-state">
+                                <i class="bi bi-inbox"></i>
+                                <p>暂无持仓</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 策略交易 -->
+        <div id="tab-strategies" class="tab-content" style="display: none;">
+            <div class="glass-card animate-in" style="padding: 0; overflow: hidden;">
+                <!-- 策略列表视图 -->
+                <div id="strategy-list-view">
+                    <div class="strategy-list-header">
+                        <div>
+                            <h4><i class="bi bi-robot"></i> 量化策略</h4>
+                            <p>选择策略查看详情和参数配置</p>
+                        </div>
+                        <button class="btn-action" onclick="loadStrategies()">
+                            <i class="bi bi-arrow-clockwise"></i> 刷新
+                        </button>
+                    </div>
+                    <div id="strategies-list" class="strategy-list-grid">
+                        <div class="empty-state">
+                            <i class="bi bi-robot"></i>
+                            <p>加载中...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 策略详情视图 -->
+                <div id="strategy-detail-view" style="display: none;">
+                    <div class="strategy-detail-header">
+                        <button class="btn-back" onclick="showStrategyList()">
+                            <i class="bi bi-arrow-left"></i> 返回策略列表
+                        </button>
+                        <div class="strategy-detail-title">
+                            <div class="strategy-detail-icon" id="detail-icon">
+                                <i class="bi bi-gear-fill"></i>
+                            </div>
+                            <div>
+                                <h3 id="detail-title">策略名称</h3>
+                                <span class="strategy-status-badge stopped" id="detail-status">已停止</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="strategy-detail-content" id="detail-content">
+                        <!-- 动态内容 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 订单管理 -->
+        <div id="tab-orders" class="tab-content" style="display: none;">
+            <div class="glass-card" style="padding: 24px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 style="font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                        <i class="bi bi-list-ul" style="color: var(--accent-blue);"></i>
+                        订单记录
+                    </h5>
+                </div>
+                <ul class="nav nav-tabs mb-3" style="border-bottom: 1px solid var(--border-color);">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="showOrderTab('open', this)" style="color: var(--text-secondary);">未完成订单</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showOrderTab('history', this)" style="color: var(--text-secondary);">历史记录</a>
+                    </li>
+                </ul>
+                <div id="open-orders-list">
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <p>暂无未完成订单</p>
+                    </div>
+                </div>
+                <div id="history-orders-list" style="display: none;">
+                    <div class="empty-state">
+                        <i class="bi bi-clock-history"></i>
+                        <p>暂无历史订单</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentSymbol = 'BTCUSDT';
+        let currentPrice = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMarketData(currentSymbol);
+            loadStrategies();
+            loadOpenOrders();
+            setInterval(() => loadMarketData(currentSymbol), 10000);
+        });
+
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            document.querySelector('.sidebar').classList.toggle('mobile-open');
+            document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
+        }
+
+        function switchTab(tab, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tab).style.display = 'block';
+            if (btn) {
+                btn.classList.add('active');
+            } else {
+                document.querySelector(`.tab-btn[onclick*="switchTab('${tab}')"]`)?.classList.add('active');
+            }
+        }
+
+        function showOrderTab(tab, link) {
+            if (link) {
+                link.preventDefault();
+            }
+            document.querySelectorAll('#tab-orders .nav-link').forEach(el => el.classList.remove('active'));
+            if (link) {
+                link.target.classList.add('active');
+            } else {
+                document.querySelector(`#tab-orders a[onclick*="showOrderTab('${tab}')"]`)?.classList.add('active');
+            }
+
+            if (tab === 'open') {
+                document.getElementById('open-orders-list').style.display = 'block';
+                document.getElementById('history-orders-list').style.display = 'none';
+            } else {
+                document.getElementById('open-orders-list').style.display = 'none';
+                document.getElementById('history-orders-list').style.display = 'block';
+            }
+        }
+
+        async function loadMarketData(symbol) {
+            try {
+                const response = await fetch(`/api/market/${symbol}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const ticker = data.ticker;
+                    currentPrice = ticker.last;
+
+                    const change = ticker.change_percent || 0;
+                    const priceEl = document.getElementById('current-price');
+                    priceEl.textContent = formatPrice(ticker.last);
+                    priceEl.className = 'price-value ' + (change >= 0 ? 'up' : 'down');
+
+                    document.getElementById('market-price').textContent = formatPrice(ticker.last);
+                    document.getElementById('market-high').textContent = formatPrice(ticker.high);
+                    document.getElementById('market-low').textContent = formatPrice(ticker.low);
+                    document.getElementById('market-volume').textContent = formatVolume(ticker.quote_volume);
+                }
+            } catch (error) {
+                console.error('加载市场数据失败:', error);
+            }
+        }
+
+        async function loadStrategies() {
+            try {
+                const response = await fetch('/api/strategies');
+                const data = await response.json();
+
+                if (data.success) {
+                    currentStrategies = data.strategies;
+                    renderStrategies(data.strategies);
+                }
+            } catch (error) {
+                console.error('加载策略失败:', error);
+            }
+        }
+
+        // 策略配置
+        const strategyConfig = {
+            'GridStrategy': {
+                name: '网格策略',
+                icon: 'grid',
+                iconClass: 'bi-grid-3x3-gap-fill',
+                desc: '震荡行情中低买高卖',
+                color: '#667eea'
+            },
+            'DCAStrategy': {
+                name: '定投策略',
+                icon: 'dca',
+                iconClass: 'bi-calendar-check-fill',
+                desc: '定期定额，平均成本',
+                color: '#11998e'
+            },
+            'TrendStrategy': {
+                name: '趋势策略',
+                icon: 'trend',
+                iconClass: 'bi-trending-up-fill',
+                desc: 'MACD/RSI趋势跟随',
+                color: '#f5576c'
+            },
+            'FundingArbitrageStrategy': {
+                name: '资金费率套利',
+                icon: 'funding',
+                iconClass: 'bi-currency-exchange',
+                desc: '利用资金费率获取稳定收益',
+                color: '#4facfe'
+            },
+            'ScalpingStrategy': {
+                name: '剥头皮',
+                icon: 'scalping',
+                iconClass: 'bi-lightning-charge-fill',
+                desc: '短期波动快速盈利',
+                color: '#fa709a'
+            },
+            'AdaptiveStrategy': {
+                name: '自适应',
+                icon: 'adaptive',
+                iconClass: 'bi-shuffle',
+                desc: 'ADX切换趋势/震荡模式',
+                color: '#f59e0b'
+            }
+        };
+
+        // 策略详细信息
+        const strategyDetails = {
+            'GridStrategy': {
+                overview: '网格策略是一种在固定价格区间内自动执行高抛低吸的量化交易策略。系统会在价格区间内设置多个网格点，当价格下跌到网格点时自动买入，当价格上涨到网格点时自动卖出，从而在震荡行情中获取稳定收益。',
+                principle: `1. 价格区间划分：将投资资金分成若干份，在预设的价格区间内均匀分布
+2. 自动化交易：当价格触及某个网格点时，自动执行对应的买卖操作
+3. 套利循环：在震荡行情中，价格在网格间来回波动，每次波动都可能产生盈利
+4. 止盈止损：当价格突破区间或达到预设的止损/止盈条件时，平仓离场`,
+                suitable: `• 震荡行情：价格在一段时间内来回波动，没有明显的单边趋势
+• 横盘整理：价格波动幅度较小但频率较高
+• 高波动币种：波动性较大的币种更容易触发网格交易
+• 适合风险厌恶型投资者，追求稳定的小额收益`,
+                risk: `• 单边行情风险：如果价格持续下跌，可能被套牢需要长期持有
+• 资金利用率：部分资金始终处于等待状态，利用率不高
+• 极端行情：价格剧烈波动可能超出预设区间
+• 手续费累积：频繁交易会产生较多手续费`,
+                parameters: `grid_count：网格数量，越多则每个网格收益越小但机会越多
+investment：总投资金额
+price_range_low/high：价格区间上下限
+stop_loss：止损比例
+take_profit：止盈比例`,
+                presets: {
+                    BTCUSDT: {
+                        conservative: { grid_count: 5, investment: 500, stop_loss: 0.1, take_profit: 0.2 },
+                        moderate: { grid_count: 10, investment: 1000, stop_loss: 0.05, take_profit: 0.1 },
+                        aggressive: { grid_count: 20, investment: 2000, stop_loss: 0.03, take_profit: 0.05 }
+                    },
+                    ETHUSDT: {
+                        conservative: { grid_count: 6, investment: 400, stop_loss: 0.12, take_profit: 0.24 },
+                        moderate: { grid_count: 12, investment: 800, stop_loss: 0.06, take_profit: 0.12 },
+                        aggressive: { grid_count: 25, investment: 1500, stop_loss: 0.04, take_profit: 0.08 }
+                    },
+                    BNBUSDT: {
+                        conservative: { grid_count: 4, investment: 300, stop_loss: 0.15, take_profit: 0.30 },
+                        moderate: { grid_count: 8, investment: 600, stop_loss: 0.08, take_profit: 0.15 },
+                        aggressive: { grid_count: 15, investment: 1000, stop_loss: 0.05, take_profit: 0.10 }
+                    }
+                }
+            },
+            'DCAStrategy': {
+                overview: '定投策略（Dollar Cost Averaging）是一种定期定额投资的策略。通过在不同时间点买入相同金额的资产，可以平滑成本，降低一次性买入的风险。长期坚持可以在价格低位积累更多筹码，在价格上涨时获得收益。',
+                principle: `1. 定期买入：按照预设的时间间隔（如每天、每周）定期买入
+2. 定额投资：每次投入固定金额，不受价格波动影响
+3. 成本平滑：高价买入少，低价买入多，自动实现高抛低吸
+4. 目标管理：设定目标持仓或目标价格，达到后考虑止盈`,
+                suitable: `• 长期投资者：看好某个币种的长期发展前景
+• 稳定币投资：用闲置的USDT定期买入主流币种
+• 工薪族理财：每月固定投入，无需时刻盯盘
+• 风险分散：避免一次性投入带来的时点风险`,
+                risk: `• 长期下跌：如果资产持续下跌，定投也会亏损
+• 机会成本：资金长期锁定，可能错过其他机会
+• 心理考验：长期亏损时需要坚持投入
+• 币种选择：选择错误的币种可能越投越亏`,
+                parameters: `investment_per_trade：每次定投金额
+interval_hours：定投间隔（小时）
+target_position：目标持仓金额
+max_price/min_price：买入价格限制`,
+                presets: {
+                    BTCUSDT: {
+                        conservative: { investment_per_trade: 50, interval_hours: 168, target_position: 2000 },
+                        moderate: { investment_per_trade: 100, interval_hours: 72, target_position: 5000 },
+                        aggressive: { investment_per_trade: 200, interval_hours: 24, target_position: 10000 }
+                    },
+                    ETHUSDT: {
+                        conservative: { investment_per_trade: 40, interval_hours: 168, target_position: 1500 },
+                        moderate: { investment_per_trade: 80, interval_hours: 72, target_position: 4000 },
+                        aggressive: { investment_per_trade: 150, interval_hours: 24, target_position: 8000 }
+                    },
+                    BNBUSDT: {
+                        conservative: { investment_per_trade: 30, interval_hours: 168, target_position: 1000 },
+                        moderate: { investment_per_trade: 60, interval_hours: 72, target_position: 3000 },
+                        aggressive: { investment_per_trade: 100, interval_hours: 24, target_position: 5000 }
+                    }
+                }
+            },
+            'TrendStrategy': {
+                overview: '趋势策略是一种跟随市场趋势进行交易的策略。通过分析价格走势和技术指标（如MACD、RSI），判断市场趋势方向，在趋势形成时顺势开仓，在趋势反转时平仓或反手。适合有明显趋势的行情。',
+                principle: `1. 趋势识别：使用MACD判断趋势方向，快线上穿慢线为上升趋势
+2. 指标确认：结合RSI确认超买超卖区域，提高信号可靠性
+3. 顺势交易：在上升趋势中做多，下降趋势中做空
+4. 止损保护：设置固定止损和追踪止损，控制最大亏损`,
+                suitable: `• 趋势行情：价格有明显上涨或下跌趋势时效果最好
+• 中长期交易：适合持有数小时到数天的趋势单
+• 技术分析爱好者：有兴趣学习和理解技术指标
+• 有耐心等待：需要等待合适的入场时机`,
+                risk: `• 假突破：频繁的假突破可能导致频繁止损
+• 滞后性：技术指标有一定滞后，可能错过部分利润
+• 盘整期：在横盘震荡时可能反复亏损
+• 参数敏感：不同参数设置效果差异较大`,
+                parameters: `investment：单笔投资金额
+kline_interval：K线周期
+fast_ema/slow_ema：EMA快慢线周期
+rsi_period：RSI周期
+stop_loss/trailing_stop：止损设置`,
+                presets: {
+                    BTCUSDT: {
+                        conservative: { investment: 500, kline_interval: '4h', stop_loss: 0.03, trailing_stop: 0.015 },
+                        moderate: { investment: 1000, kline_interval: '1h', stop_loss: 0.02, trailing_stop: 0.01 },
+                        aggressive: { investment: 2000, kline_interval: '15m', stop_loss: 0.01, trailing_stop: 0.005 }
+                    },
+                    ETHUSDT: {
+                        conservative: { investment: 400, kline_interval: '4h', stop_loss: 0.04, trailing_stop: 0.02 },
+                        moderate: { investment: 800, kline_interval: '1h', stop_loss: 0.025, trailing_stop: 0.012 },
+                        aggressive: { investment: 1500, kline_interval: '15m', stop_loss: 0.015, trailing_stop: 0.008 }
+                    },
+                    BNBUSDT: {
+                        conservative: { investment: 300, kline_interval: '4h', stop_loss: 0.05, trailing_stop: 0.025 },
+                        moderate: { investment: 600, kline_interval: '1h', stop_loss: 0.03, trailing_stop: 0.015 },
+                        aggressive: { investment: 1000, kline_interval: '15m', stop_loss: 0.02, trailing_stop: 0.01 }
+                    }
+                }
+            },
+            'FundingArbitrageStrategy': {
+                overview: '资金费率套利是一种利用加密货币交易所永续合约资金费率机制进行套利的策略。当资金费率为正时，做多合约同时做空现货，从资金费中获利；当资金费率为负时，做空合约同时做多现货。风险较低但收益稳定。',
+                principle: `1. 费率监控：实时监控各币种的资金费率变化
+2. 对冲开仓：当资金费率符合条件时，同时开等量合约和现货仓位
+3. 持有至结算：持有仓位直到资金费率结算或达到止盈止损条件
+4. 平仓了结：到期平仓或触发止盈止损时同时平掉两个仓位`,
+                suitable: `• 高资金费率币种：资金费率较高的币种收益更可观
+• 大资金投资者：资金量大才能覆盖手续费获得正收益
+• 低风险偏好：追求稳定收益，不追求暴利
+• 有耐心持有：需要持有到下一个结算周期`,
+                risk: `• 费率变化：资金费率可能突然变为负值
+• 币价波动：虽然对冲了方向风险，但极端行情仍可能亏损
+• 手续费：需要双向支付手续费，资金利用率要求高
+• 流动性风险：大额资金进出可能影响市场`,
+                parameters: `min_funding_rate：最小资金费率阈值
+max_position_size：单币种最大仓位
+max_positions：最大同时持仓数
+hedge_profit_target：止盈目标
+max_loss：最大亏损限制
+holding_hours：持有时间`,
+                presets: {
+                    BTCUSDT: {
+                        conservative: { min_funding_rate: 0.001, max_position_size: 50, max_positions: 2 },
+                        moderate: { min_funding_rate: 0.0005, max_position_size: 100, max_positions: 3 },
+                        aggressive: { min_funding_rate: 0.0001, max_position_size: 200, max_positions: 5 }
+                    },
+                    ETHUSDT: {
+                        conservative: { min_funding_rate: 0.0015, max_position_size: 40, max_positions: 2 },
+                        moderate: { min_funding_rate: 0.0008, max_position_size: 80, max_positions: 3 },
+                        aggressive: { min_funding_rate: 0.0002, max_position_size: 150, max_positions: 4 }
+                    },
+                    BNBUSDT: {
+                        conservative: { min_funding_rate: 0.002, max_position_size: 30, max_positions: 2 },
+                        moderate: { min_funding_rate: 0.001, max_position_size: 60, max_positions: 3 },
+                        aggressive: { min_funding_rate: 0.0003, max_position_size: 100, max_positions: 4 }
+                    }
+                }
+            },
+            'ScalpingStrategy': {
+                overview: '剥头皮策略是一种利用短期价格波动快速小额盈利的高频交易策略。每次交易的盈利目标较小（通常0.1%-0.5%），但交易频率高。通过严格止损控制风险，积少成多获取收益。',
+                principle: `1. 短期信号：使用快速EMA交叉判断短期趋势方向
+2. 快速进出：设置小盈利目标和小止损，快进快出
+3. 波动过滤：只在波动率足够时交易，避免盘整损耗
+4. 仓位管理：每笔交易仓位固定，每日交易次数设限`,
+                suitable: `• 高波动行情：价格短期波动剧烈的时段
+• 盘口活跃币种：买卖盘深度足够
+• 全天候盯盘：有时间实时监控市场
+• 经验丰富者：能快速判断入场时机`,
+                risk: `• 手续费敏感：频繁交易手续费累积可能超过利润
+• 时机要求高：入场时机不好容易被反复止损
+• 精神消耗：需要长时间集中注意力
+• 技术故障：网络延迟可能导致成交不如预期`,
+                parameters: `position_size：每笔交易仓位大小
+profit_target：盈利目标比例
+stop_loss：止损比例
+max_holding_seconds：最大持仓时间
+min_volatility：最小波动率要求
+ema_fast/slow：EMA周期设置
+max_daily_trades：每日最大交易次数
+cooldown_seconds：交易间隔冷却时间`,
+                presets: {
+                    BTCUSDT: {
+                        conservative: { position_size: 50, profit_target: 0.0015, stop_loss: 0.0005, max_holding_seconds: 120, ema_fast: 9, ema_slow: 21, max_daily_trades: 15, cooldown_seconds: 30 },
+                        moderate: { position_size: 100, profit_target: 0.0015, stop_loss: 0.0005, max_holding_seconds: 120, ema_fast: 9, ema_slow: 21, max_daily_trades: 30, cooldown_seconds: 20 },
+                        aggressive: { position_size: 150, profit_target: 0.002, stop_loss: 0.0008, max_holding_seconds: 60, ema_fast: 5, ema_slow: 15, max_daily_trades: 50, cooldown_seconds: 10 }
+                    },
+                    ETHUSDT: {
+                        conservative: { position_size: 40, profit_target: 0.002, stop_loss: 0.0006, max_holding_seconds: 100, ema_fast: 9, ema_slow: 21, max_daily_trades: 12, cooldown_seconds: 35 },
+                        moderate: { position_size: 80, profit_target: 0.002, stop_loss: 0.0006, max_holding_seconds: 100, ema_fast: 9, ema_slow: 21, max_daily_trades: 25, cooldown_seconds: 25 },
+                        aggressive: { position_size: 120, profit_target: 0.0025, stop_loss: 0.001, max_holding_seconds: 50, ema_fast: 5, ema_slow: 15, max_daily_trades: 40, cooldown_seconds: 12 }
+                    },
+                    BNBUSDT: {
+                        conservative: { position_size: 30, profit_target: 0.0025, stop_loss: 0.0008, max_holding_seconds: 90, ema_fast: 9, ema_slow: 21, max_daily_trades: 10, cooldown_seconds: 40 },
+                        moderate: { position_size: 60, profit_target: 0.0025, stop_loss: 0.0008, max_holding_seconds: 90, ema_fast: 9, ema_slow: 21, max_daily_trades: 20, cooldown_seconds: 30 },
+                        aggressive: { position_size: 100, profit_target: 0.003, stop_loss: 0.0012, max_holding_seconds: 45, ema_fast: 5, ema_slow: 15, max_daily_trades: 35, cooldown_seconds: 15 }
+                    }
+                }
+            },
+            'AdaptiveStrategy': {
+                overview: '自适应策略是一种根据市场状态自动切换交易模式的量化策略。通过ADX指标判断当前市场是趋势还是震荡，趋势市场使用EMA金叉死叉，震荡市场使用RSI+布林带。50倍杠杆，20U本位，挂单开仓分批止盈。',
+                principle: `1. 市场状态判断：ADX>25为趋势市场，ADX<25为震荡市场
+2. 趋势模式：EMA9上穿EMA21做多，下穿做空
+3. 震荡模式：RSI超卖+布林下轨做多，RSI超买+布林上轨做空
+4. 挂单开仓：限价单±0.1%，3分钟超时撤销
+5. 分批止盈：20%平50%，30%平50%
+6. 保本止损：价格回归后止损移至开仓价+手续费`,
+                suitable: `• 多空双做：趋势和震荡行情都能适应
+• 趋势明显市场：ADX>25时EMA信号效果好
+• 震荡行情：RSI+布林带在区间内反复有效
+• 高频交易：5分钟K线，信号较多`,
+                risk: `• 信号频繁：可能在一个方向反复开仓止损
+• 杠杆风险：50倍杠杆，波动较大
+• 手续费累积：高频交易手续费不可忽视
+• 假信号：在转折点可能出现连续亏损`,
+                parameters: `leverage：杠杆倍数
+position_value：单次开仓本金
+stop_loss_pct：止损比例（本金50%）
+kline_interval：K线周期
+adx_threshold：ADX阈值
+ema_fast/slow：EMA周期
+rsi_period/overbought/oversold：RSI设置
+bollinger_period/std：布林带设置
+take_profit_1/2：止盈设置
+pending_timeout：挂单超时
+cooldown_seconds：冷却时间`,
+                presets: {
+                    ETHUSDT: {
+                        conservative: { leverage: 50, position_value: 20, stop_loss_pct: 0.50, take_profit_1: 0.20, take_profit_2: 0.30, pending_timeout: 180, cooldown_seconds: 300 },
+                        moderate: { leverage: 50, position_value: 20, stop_loss_pct: 0.50, take_profit_1: 0.20, take_profit_2: 0.30, pending_timeout: 180, cooldown_seconds: 300 },
+                        aggressive: { leverage: 50, position_value: 20, stop_loss_pct: 0.50, take_profit_1: 0.20, take_profit_2: 0.30, pending_timeout: 180, cooldown_seconds: 300 }
+                    }
+                }
+            }
+        };
+
+        // 全局存储当前策略列表
+        let currentStrategies = [];
+
+        // 生成策略参数摘要HTML
+        function getStrategyParamsSummary(strategy) {
+            const params = strategy.params || {};
+            if (!params || Object.keys(params).length === 0) return '';
+
+            let html = '<div class="strategy-params-summary">';
+
+            // 根据策略类型显示关键参数
+            if (strategy.name === 'ScalpingStrategy') {
+                html += `<span class="param-tag">盈利目标: ${((params.profit_target || 0) * 100).toFixed(2)}%</span>`;
+                html += `<span class="param-tag">止损: ${((params.stop_loss || 0) * 100).toFixed(2)}%</span>`;
+                html += `<span class="param-tag">仓位: ${params.position_size || 0}</span>`;
+            } else if (strategy.name === 'GridStrategy') {
+                html += `<span class="param-tag">网格: ${params.grid_count || 0}</span>`;
+                html += `<span class="param-tag">投资: ${params.investment || 0}</span>`;
+            } else if (strategy.name === 'DCAStrategy') {
+                html += `<span class="param-tag">单次: ${params.investment_per_trade || 0}</span>`;
+                html += `<span class="param-tag">间隔: ${params.interval_hours || 0}h</span>`;
+            } else if (strategy.name === 'TrendStrategy') {
+                html += `<span class="param-tag">投资: ${params.investment || 0}</span>`;
+                html += `<span class="param-tag">周期: ${params.kline_interval || '1h'}</span>`;
+            } else if (strategy.name === 'FundingArbitrageStrategy') {
+                html += `<span class="param-tag">仓位: ${params.max_position_size || 0}</span>`;
+                html += `<span class="param-tag">持仓: ${params.max_positions || 0}</span>`;
+            } else if (strategy.name === 'AdaptiveStrategy') {
+                html += `<span class="param-tag">杠杆: ${params.leverage || 50}x</span>`;
+                html += `<span class="param-tag">本金: ${params.position_value || 20}U</span>`;
+                html += `<span class="param-tag">TP1: ${((params.take_profit_1 || 0) * 100).toFixed(0)}%</span>`;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function renderStrategies(strategies) {
+            const container = document.getElementById('strategies-list');
+
+            if (!strategies || strategies.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-robot"></i>
+                        <p>暂无策略</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="strategies-grid">';
+
+            // 排序：自适应策略排第一
+            strategies.sort((a, b) => {
+                if (a.name === 'AdaptiveStrategy') return -1;
+                if (b.name === 'AdaptiveStrategy') return 1;
+                return 0;
+            });
+
+            strategies.forEach(strategy => {
+                const config = strategyConfig[strategy.name] || {
+                    name: strategy.name,
+                    icon: 'default',
+                    iconClass: 'bi-gear-fill',
+                    desc: '',
+                    color: '#666'
+                };
+                const isRunning = strategy.status === 'running';
+
+                // 获取策略相关统计数据
+                let statsHtml = '';
+                if (strategy.dca) {
+                    const pnl = strategy.dca.profit_loss || 0;
+                    const pnlPercent = strategy.dca.profit_loss_percent || 0;
+                    statsHtml = `
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-wallet2"></i> 总投入</div>
+                            <div class="strategy-stat-value">${strategy.dca.total_invested?.toFixed(2) || 0} USDT</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-graph-up-arrow"></i> 盈亏</div>
+                            <div class="strategy-stat-value ${pnl >= 0 ? 'positive' : 'negative'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} (${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%)</div>
+                        </div>
+                    `;
+                } else if (strategy.trend && strategy.trend.indicators) {
+                    const indicators = strategy.trend.indicators || {};
+                    const rsi = indicators.rsi || 50;
+                    statsHtml = `
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-gauge"></i> RSI</div>
+                            <div class="strategy-stat-value ${rsi > 70 ? 'negative' : rsi < 30 ? 'positive' : ''}">${rsi.toFixed(1)}</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-currency-dollar"></i> 当前价</div>
+                            <div class="strategy-stat-value">${strategy.trend.current_price ? formatPrice(strategy.trend.current_price) : '-'}</div>
+                        </div>
+                    `;
+                } else if (strategy.funding_arbitrage) {
+                    const rate = (strategy.funding_arbitrage.current_funding_rate || 0) * 100;
+                    statsHtml = `
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-percent"></i> 资金费率</div>
+                            <div class="strategy-stat-value ${rate > 0 ? 'positive' : ''}">${rate.toFixed(4)}%</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-layers"></i> 持仓数</div>
+                            <div class="strategy-stat-value">${strategy.funding_arbitrage.positions || 0}/${strategy.funding_arbitrage.max_positions || 0}</div>
+                        </div>
+                    `;
+                } else if (strategy.scalping) {
+                    statsHtml = `
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-arrow-left-right"></i> 今日交易</div>
+                            <div class="strategy-stat-value">${strategy.scalping.trades_today || 0}/${strategy.scalping.max_daily_trades || 0}</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-wind"></i> 波动率</div>
+                            <div class="strategy-stat-value">${((strategy.scalping.volatility || 0) * 100).toFixed(3)}%</div>
+                        </div>
+                    `;
+                } else if (strategy.adaptive) {
+                    const mode = strategy.adaptive.market_mode === 'trend' ? '趋势' : '震荡';
+                    const adx = strategy.adaptive.adx || 0;
+                    const rsi = strategy.adaptive.rsi || 50;
+                    statsHtml = `
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-shuffle"></i> 市场模式</div>
+                            <div class="strategy-stat-value">${mode}</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-bar-chart"></i> ADX/RSI</div>
+                            <div class="strategy-stat-value">${adx.toFixed(1)}/${rsi.toFixed(0)}</div>
+                        </div>
+                    `;
+                } else {
+                    // 显示数据库中的统计信息
+                    const stats = strategy.stats || {};
+                    const totalTrades = stats.total_trades || 0;
+                    const totalPnl = stats.total_pnl || 0;
+                    const pnlPercent = stats.pnl_percent || 0;
+                    const lastRun = strategy.last_run ? new Date(strategy.last_run).toLocaleString('zh-CN', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '从未运行';
+                    statsHtml = `
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-arrow-left-right"></i> 交易次数</div>
+                            <div class="strategy-stat-value">${totalTrades} 次</div>
+                        </div>
+                        <div class="strategy-stat">
+                            <div class="strategy-stat-label"><i class="bi bi-graph-up-arrow"></i> 累计盈亏</div>
+                            <div class="strategy-stat-value ${totalPnl >= 0 ? 'positive' : 'negative'}">${totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)} USDT</div>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div class="strategy-card ${isRunning ? 'running' : ''}" onclick="showStrategyDetailView('${strategy.name}')" style="cursor: pointer;">
+                        <div class="strategy-card-header">
+                            <div class="strategy-icon ${config.icon}" style="background: linear-gradient(135deg, ${config.color} 0%, ${config.color}99 100%);">
+                                <i class="bi ${config.iconClass}"></i>
+                                ${isRunning ? '<div class="running-indicator"></div>' : ''}
+                            </div>
+                            <div class="strategy-card-info">
+                                <div class="strategy-card-title">
+                                    <span class="strategy-card-name">${config.name}</span>
+                                    <span class="strategy-status-badge ${isRunning ? 'running' : 'stopped'}">
+                                        ${isRunning ? '<i class="bi bi-circle-fill" style="font-size:6px;margin-right:4px;"></i>运行中' : '已停止'}
+                                    </span>
+                                </div>
+                                <div class="strategy-card-symbol">
+                                    <i class="bi bi-activity"></i> ${strategy.params?.symbol || strategy.symbol || 'BTCUSDT'}
+                                </div>
+                            </div>
+                            <div class="strategy-card-expand">
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
+                        </div>
+                        <div class="strategy-card-body">
+                            <p class="strategy-desc">${config.desc}</p>
+                            <div class="strategy-stats-grid">
+                                ${statsHtml}
+                            </div>
+                            ${getStrategyParamsSummary(strategy)}
+                        </div>
+                        <div class="strategy-card-footer" onclick="event.stopPropagation();">
+                            <button class="btn-action btn-detail" onclick="showStrategyDetailView('${strategy.name}')">
+                                <i class="bi bi-info-circle"></i> 详情
+                            </button>
+                            ${isRunning ? `
+                                <button class="btn-action stop" onclick="stopStrategy('${strategy.name}')">
+                                    <i class="bi bi-stop-circle"></i> 停止
+                                </button>
+                            ` : `
+                                <button class="btn-action start" onclick="startStrategy('${strategy.name}')">
+                                    <i class="bi bi-play-circle"></i> 启动
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Toast 通知函数
+        function showToast(type, title, message, duration = 3000) {
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+
+            const iconMap = {
+                'success': 'bi-check-circle-fill',
+                'error': 'bi-x-circle-fill',
+                'info': 'bi-info-circle-fill'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <i class="bi ${iconMap[type]} toast-icon"></i>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            // 自动移除
+            setTimeout(() => {
+                toast.style.animation = 'toast-out 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        function formatPrice(price) {
+            if (!price) return '-';
+            if (price >= 1000) return price.toFixed(2);
+            if (price >= 1) return price.toFixed(4);
+            return price.toFixed(6);
+        }
+
+        async function startStrategy(name) {
+            const typeMap = {
+                'GridStrategy': 'grid',
+                'DCAStrategy': 'dca',
+                'TrendStrategy': 'trend',
+                'FundingArbitrageStrategy': 'funding',
+                'ScalpingStrategy': 'scalping',
+                'AdaptiveStrategy': 'adaptive'
+            };
+
+            const btn = event.target.closest('.btn-action.start');
+            const originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> 启动中';
+                btn.disabled = true;
+            }
+
+            try {
+                const response = await fetch('/api/strategy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'start',
+                        strategy_type: typeMap[name],
+                        params: { symbol: currentSymbol }
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('success', '策略启动成功', `${name} 已开始运行`);
+                    loadStrategies();
+                } else {
+                    showToast('error', '启动失败', data.error || '未知错误');
+                    if (btn) {
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                }
+            } catch (error) {
+                showToast('error', '启动失败', error.message || '网络错误');
+                if (btn) {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        async function stopStrategy(name) {
+            const btn = event.target.closest('.btn-action.stop');
+            const originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> 停止中';
+                btn.disabled = true;
+            }
+
+            try {
+                const response = await fetch('/api/strategy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'stop',
+                        strategy_type: name
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('info', '策略已停止', `${name} 已停止运行`);
+                    loadStrategies();
+                } else {
+                    showToast('error', '停止失败', data.error || '未知错误');
+                    if (btn) {
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                }
+            } catch (error) {
+                showToast('error', '停止失败', error.message || '网络错误');
+                if (btn) {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        async function runStrategy(name) {
+            const btn = event.target.closest('.btn-action.btn-run');
+            const originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> 执行中';
+                btn.disabled = true;
+            }
+
+            try {
+                const response = await fetch('/api/strategy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'run',
+                        strategy_type: name
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const result = data.result || {};
+                    const signal = result.signal;
+                    if (signal && signal.type && signal.type !== 'hold') {
+                        showToast('success', '策略执行成功', `${signal.type.toUpperCase()} ${signal.symbol || ''} @ ${signal.price || ''}`);
+                    } else {
+                        showToast('info', '策略执行完成', '当前无交易信号');
+                    }
+                    loadStrategies();
+                } else {
+                    showToast('error', '执行失败', data.error || '未知错误');
+                    if (btn) {
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                }
+            } catch (error) {
+                showToast('error', '执行失败', error.message || '网络错误');
+                if (btn) {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        async function placeOrder(side) {
+            const symbol = document.getElementById('trade-symbol').value;
+            const orderType = document.getElementById('order-type').value;
+            const amount = parseFloat(document.getElementById('trade-amount').value);
+            const price = orderType === 'limit' ? parseFloat(document.getElementById('limit-price').value) : currentPrice;
+
+            if (!amount || amount <= 0) {
+                alert('请输入有效的数量');
+                return;
+            }
+
+            if (orderType === 'limit' && (!price || price <= 0)) {
+                alert('请输入有效的价格');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        symbol: symbol,
+                        side: side,
+                        type: orderType,
+                        amount: amount,
+                        price: price
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.message);
+                    loadMarketData(symbol);
+                    loadOpenOrders();
+                } else {
+                    alert('下单失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('下单失败: ' + error);
+            }
+        }
+
+        async function loadOpenOrders() {
+            try {
+                const response = await fetch('/api/open-orders');
+                const data = await response.json();
+
+                if (data.success) {
+                    renderOpenOrders(data.orders);
+                }
+            } catch (error) {
+                console.error('加载订单失败:', error);
+            }
+        }
+
+        function renderOpenOrders(orders) {
+            const container = document.getElementById('open-orders-list');
+
+            if (!orders || orders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <p>暂无未完成订单</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>交易对</th>
+                            <th>类型</th>
+                            <th>方向</th>
+                            <th>数量</th>
+                            <th>价格</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            orders.forEach(order => {
+                html += `<tr>`;
+                html += `<td>${new Date(order.timestamp).toLocaleString('zh-CN')}</td>`;
+                html += `<td><strong>${order.symbol}</strong></td>`;
+                html += `<td>${order.type === 'market' ? '市价' : '限价'}</td>`;
+                html += `<td style="color: ${order.side === 'buy' ? 'var(--accent-green)' : 'var(--accent-red)'}">${order.side === 'buy' ? '买入' : '卖出'}</td>`;
+                html += `<td>${order.amount}</td>`;
+                html += `<td>${order.price || '市价'}</td>`;
+                html += `<td><button class="btn-cancel" onclick="cancelOrder('${order.id}', '${order.symbol}')">取消</button></td>`;
+                html += `</tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        async function cancelOrder(orderId, symbol) {
+            if (!confirm('确定要取消这个订单吗？')) return;
+
+            try {
+                const response = await fetch(`/api/order/${orderId}/cancel`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol: symbol })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('订单已取消');
+                    loadOpenOrders();
+                } else {
+                    alert('取消失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('取消失败: ' + error);
+            }
+        }
+
+        document.getElementById('order-type').addEventListener('change', function() {
+            document.getElementById('limit-price-group').style.display =
+                this.value === 'limit' ? 'block' : 'none';
+        });
+
+        document.getElementById('trade-symbol').addEventListener('change', function() {
+            currentSymbol = this.value;
+            document.getElementById('market-symbol').value = this.value;
+            loadMarketData(this.value);
+        });
+
+        document.getElementById('market-symbol').addEventListener('change', function() {
+            currentSymbol = this.value;
+            document.getElementById('trade-symbol').value = this.value;
+            loadMarketData(this.value);
+        });
+
+        document.getElementById('trade-amount').addEventListener('input', function() {
+            const amount = parseFloat(this.value) || 0;
+            document.getElementById('trade-value').value = (amount * currentPrice).toFixed(2);
+        });
+
+        document.getElementById('trade-value').addEventListener('input', function() {
+            const value = parseFloat(this.value) || 0;
+            document.getElementById('trade-amount').value = (value / currentPrice).toFixed(6);
+        });
+
+        function formatPrice(price) {
+            if (!price) return '-';
+            if (price >= 1000) return price.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (price >= 1) return price.toFixed(2);
+            return price.toFixed(6);
+        }
+
+        function formatVolume(volume) {
+            if (!volume) return '-';
+            if (volume >= 1000000000) return (volume / 1000000000).toFixed(2) + 'B';
+            if (volume >= 1000000) return (volume / 1000000).toFixed(2) + 'M';
+            if (volume >= 1000) return (volume / 1000).toFixed(2) + 'K';
+            return volume.toFixed(2);
+        }
+
+        // 策略详情模态框
+        let currentStrategyData = null;
+
+        // 返回策略列表视图
+        function showStrategyList() {
+            const listView = document.getElementById('strategy-list-view');
+            const detailView = document.getElementById('strategy-detail-view');
+
+            if (listView) listView.style.display = 'block';
+            if (detailView) detailView.style.display = 'none';
+        }
+
+        // 切换策略详情面板（嵌入式展开/收起）
+        let expandedCard = null;
+
+        function toggleStrategyPanel(name) {
+            const panel = document.getElementById('panel-' + name);
+            const card = document.getElementById('card-' + name);
+
+            if (!panel) return;
+
+            // 如果点击的是已经展开的面板，则收起
+            if (expandedCard === name) {
+                panel.classList.remove('active');
+                card.classList.remove('expanded');
+                expandedCard = null;
+                return;
+            }
+
+            // 收起之前展开的面板
+            if (expandedCard) {
+                const prevPanel = document.getElementById('panel-' + expandedCard);
+                const prevCard = document.getElementById('card-' + expandedCard);
+                if (prevPanel) prevPanel.classList.remove('active');
+                if (prevCard) prevCard.classList.remove('expanded');
+            }
+
+            // 展开新面板
+            panel.classList.add('active');
+            card.classList.add('expanded');
+            expandedCard = name;
+
+            // 滚动到视图中
+            setTimeout(() => {
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        // 生成策略参数字段HTML
+        function getStrategyParamsHtml(strategyName) {
+            const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT'];
+            const symbolSelectHtml = `<select id="param-symbol-${strategyName}" class="param-select">${symbols.map(s => `<option value="${s}">${s}</option>`).join('')}</select>`;
+
+            const params = {
+                'GridStrategy': [
+                    { key: 'symbol', label: '交易对', type: 'select', options: symbols },
+                    { key: 'grid_count', label: '网格数量', type: 'number' },
+                    { key: 'investment', label: '投资金额', type: 'number' },
+                    { key: 'price_range_low', label: '价格下限', type: 'number' },
+                    { key: 'price_range_high', label: '价格上限', type: 'number' },
+                    { key: 'stop_loss', label: '止损比例', type: 'number' },
+                    { key: 'take_profit', label: '止盈比例', type: 'number' }
+                ],
+                'DCAStrategy': [
+                    { key: 'symbol', label: '交易对', type: 'select', options: symbols },
+                    { key: 'investment_per_trade', label: '单次投入', type: 'number' },
+                    { key: 'interval_hours', label: '间隔(小时)', type: 'number' },
+                    { key: 'target_position', label: '目标持仓', type: 'number' },
+                    { key: 'max_price', label: '最高价', type: 'number' },
+                    { key: 'min_price', label: '最低价', type: 'number' }
+                ],
+                'TrendStrategy': [
+                    { key: 'symbol', label: '交易对', type: 'select', options: symbols },
+                    { key: 'investment', label: '投资金额', type: 'number' },
+                    { key: 'kline_interval', label: 'K线周期', type: 'text' },
+                    { key: 'fast_ema', label: '快线EMA', type: 'number' },
+                    { key: 'slow_ema', label: '慢线EMA', type: 'number' },
+                    { key: 'rsi_period', label: 'RSI周期', type: 'number' }
+                ],
+                'FundingArbitrageStrategy': [
+                    { key: 'symbol', label: '交易对', type: 'select', options: symbols },
+                    { key: 'min_funding_rate', label: '最小费率', type: 'number' },
+                    { key: 'max_position_size', label: '最大仓位', type: 'number' },
+                    { key: 'max_positions', label: '最大持仓数', type: 'number' },
+                    { key: 'hedge_profit_target', label: '对冲止盈', type: 'number' },
+                    { key: 'max_loss', label: '最大亏损', type: 'number' },
+                    { key: 'holding_hours', label: '持有时间', type: 'number' }
+                ],
+                'ScalpingStrategy': [
+                    { key: 'symbol', label: '交易对', type: 'select', options: symbols },
+                    { key: 'position_size', label: '仓位大小', type: 'number' },
+                    { key: 'profit_target', label: '盈利目标', type: 'number' },
+                    { key: 'stop_loss', label: '止损', type: 'number' },
+                    { key: 'max_holding_seconds', label: '最大持仓(秒)', type: 'number' },
+                    { key: 'min_volatility', label: '最小波动率', type: 'number' },
+                    { key: 'ema_fast', label: '快速EMA', type: 'number' },
+                    { key: 'ema_slow', label: '慢速EMA', type: 'number' },
+                    { key: 'max_daily_trades', label: '每日最大交易', type: 'number' },
+                    { key: 'cooldown_seconds', label: '冷却时间(秒)', type: 'number' }
+                ],
+                'AdaptiveStrategy': [
+                    { key: 'symbol', label: '交易对', type: 'select', options: ['ETHUSDT'] },
+                    { key: 'leverage', label: '杠杆倍数', type: 'number' },
+                    { key: 'position_value', label: '本金(U)', type: 'number' },
+                    { key: 'stop_loss_pct', label: '止损%', type: 'number' },
+                    { key: 'take_profit_1', label: '止盈1', type: 'number' },
+                    { key: 'take_profit_1_ratio', label: '止盈1比例', type: 'number' },
+                    { key: 'take_profit_2', label: '止盈2', type: 'number' },
+                    { key: 'pending_timeout', label: '挂单超时(秒)', type: 'number' },
+                    { key: 'cooldown_seconds', label: '冷却时间(秒)', type: 'number' },
+                    { key: 'adx_threshold', label: 'ADX阈值', type: 'number' }
+                ]
+            };
+
+            const strategyParams = params[strategyName] || [];
+            let html = '';
+
+            strategyParams.forEach(p => {
+                if (p.type === 'select' && p.options) {
+                    html += `
+                        <div class="param-item">
+                            <label>${p.label}</label>
+                            <select id="param-${p.key}-${strategyName}" class="param-select" data-param="${p.key}">
+                                ${p.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="param-item">
+                            <label>${p.label}</label>
+                            <input type="${p.type}" id="param-${p.key}-${strategyName}" value="" data-param="${p.key}">
+                        </div>
+                    `;
+                }
+            });
+
+            return html || '<p style="color: var(--text-muted);">暂无参数配置</p>';
+        }
+
+        // 显示策略详情视图
+        function showStrategyDetailView(name) {
+            const listView = document.getElementById('strategy-list-view');
+            const detailView = document.getElementById('strategy-detail-view');
+
+            if (listView) listView.style.display = 'none';
+            if (detailView) detailView.style.display = 'block';
+
+            // 打开模态框
+            showStrategyDetail(name);
+        }
+
+        function showStrategyDetail(name) {
+            // 优先使用本地缓存的策略数据
+            const strategy = currentStrategies.find(s => s.name === name);
+            if (strategy) {
+                currentStrategyData = strategy;
+                // 同时获取策略详细统计
+                fetchStrategyLogs(name, strategy);
+            } else {
+                // 如果本地没有，则从服务器获取
+                fetch('/api/strategies')
+                    .then(r => r.json())
+                    .then(data => {
+                        const s = data.strategies.find(s => s.name === name);
+                        if (s) {
+                            currentStrategyData = s;
+                            fetchStrategyLogs(name, s);
+                        }
+                    });
+            }
+        }
+
+        function fetchStrategyLogs(name, strategy) {
+            // 获取策略运行日志
+            fetch(`/api/strategy/${name}/logs`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        strategy.logs = data.trades || [];
+                        strategy.summary = data.summary || {};
+                        strategy.state = data.state || {};
+                    }
+                    renderStrategyDetail(strategy);
+                })
+                .catch(err => {
+                    console.error('获取策略日志失败:', err);
+                    renderStrategyDetail(strategy);
+                });
+        }
+
+        function renderStrategyDetail(strategy) {
+            const nameMap = {
+                'GridStrategy': '网格策略',
+                'DCAStrategy': '定投策略',
+                'TrendStrategy': '趋势策略',
+                'FundingArbitrageStrategy': '资金费率套利',
+                'ScalpingStrategy': '剥头皮'
+            };
+
+            // 更新标题区域
+            document.getElementById('detail-title').textContent = nameMap[strategy.name] || strategy.name;
+
+            const isRunning = strategy.status === 'running';
+            const statusEl = document.getElementById('detail-status');
+            statusEl.textContent = isRunning ? '运行中' : '已停止';
+            statusEl.className = 'strategy-status-badge ' + (isRunning ? 'running' : 'stopped');
+
+            // 更新图标颜色
+            const config = strategyConfig[strategy.name] || { color: '#667eea' };
+            document.getElementById('detail-icon').style.background = `linear-gradient(135deg, ${config.color} 0%, ${config.color}99 100%)`;
+
+            // 构建详情内容
+            let html = '';
+
+            // 策略详细说明
+            const detail = strategyDetails[strategy.name];
+            if (detail) {
+                html += `
+                    <div class="detail-section">
+                        <h4 class="detail-section-title"><i class="bi bi-info-circle"></i> 策略说明</h4>
+                        <p class="detail-text">${detail.overview}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4 class="detail-section-title"><i class="bi bi-lightbulb"></i> 原理</h4>
+                        <div class="detail-box">${detail.principle}</div>
+                    </div>
+                    <div class="detail-section">
+                        <h4 class="detail-section-title"><i class="bi bi-check-circle"></i> 适用场景</h4>
+                        <div class="detail-box suitable">${detail.suitable}</div>
+                    </div>
+                    <div class="detail-section">
+                        <h4 class="detail-section-title"><i class="bi bi-exclamation-triangle"></i> 风险提示</h4>
+                        <div class="detail-box risk">${detail.risk}</div>
+                    </div>
+                    <div class="detail-section">
+                        <h4 class="detail-section-title"><i class="bi bi-sliders"></i> 核心参数</h4>
+                        <div class="detail-box">${detail.parameters}</div>
+                    </div>
+                    <div class="detail-section">
+                        <h4 class="detail-section-title"><i class="bi bi-gear"></i> 参数配置</h4>
+                        <div class="param-form-container">
+                            ${getStrategyParamsHtml(strategy.name)}
+                        </div>
+                        <div class="param-presets">
+                            <button class="param-preset-btn" onclick="applyPreset('${strategy.name}', 'conservative')">保守</button>
+                            <button class="param-preset-btn active" onclick="applyPreset('${strategy.name}', 'moderate')">稳健</button>
+                            <button class="param-preset-btn" onclick="applyPreset('${strategy.name}', 'aggressive')">激进</button>
+                        </div>
+                        <div style="margin-top: 16px; display: flex; gap: 10px;">
+                            <button class="btn-save" id="btn-save-${strategy.name}">
+                                <i class="bi bi-check-lg"></i> 保存参数
+                            </button>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4 class="detail-section-title"><i class="bi bi-bar-chart"></i> 运行统计</h4>
+                        <div class="stats-summary">
+                            <div class="stat-item">
+                                <div class="stat-label">交易次数</div>
+                                <div class="stat-value">${strategy.summary?.total_trades || 0} 次</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">累计盈亏</div>
+                                <div class="stat-value ${(strategy.summary?.total_pnl || 0) >= 0 ? 'positive' : 'negative'}">${(strategy.summary?.total_pnl || 0) >= 0 ? '+' : ''}${(strategy.summary?.total_pnl || 0).toFixed(2)} USDT</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">买入总额</div>
+                                <div class="stat-value">${(strategy.summary?.total_buy || 0).toFixed(2)} USDT</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">卖出总额</div>
+                                <div class="stat-value">${(strategy.summary?.total_sell || 0).toFixed(2)} USDT</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4 class="detail-section-title"><i class="bi bi-clock-history"></i> 最近交易</h4>
+                        <div class="logs-container" id="logs-container">
+                            <div class="loading-state">加载中...</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 填充内容
+            document.getElementById('detail-content').innerHTML = html;
+
+            // 填充当前参数值到表单
+            if (strategy.params) {
+                Object.keys(strategy.params).forEach(key => {
+                    const input = document.getElementById('param-' + key + '-' + strategy.name);
+                    if (input) {
+                        const value = strategy.params[key];
+                        if (input.tagName === 'SELECT') {
+                            // 对于select元素，设置value会自动选中对应选项
+                            input.value = value;
+                        } else {
+                            input.value = value;
+                        }
+                    }
+                });
+            }
+
+            // 添加交易对选择事件 - 切换时自动应用稳健预设
+            const symbolSelect = document.getElementById('param-symbol-' + strategy.name);
+            if (symbolSelect) {
+                symbolSelect.addEventListener('change', function() {
+                    // 自动应用当前选中交易对的稳健预设
+                    setTimeout(() => {
+                        applyPreset(strategy.name, 'moderate');
+                    }, 50);
+                });
+            }
+
+            // 绑定保存按钮事件
+            const saveBtn = document.getElementById('btn-save-' + strategy.name);
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => saveStrategyParams(strategy.name));
+            }
+
+            // 渲染交易日志
+            renderStrategyLogs(strategy.logs || []);
+        }
+
+        function renderStrategyLogs(logs) {
+            const container = document.getElementById('logs-container');
+            if (!container) return;
+
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="bi bi-inbox"></i><p>暂无交易记录</p></div>';
+                return;
+            }
+
+            let html = '<div class="logs-list">';
+            logs.forEach(log => {
+                const side = log.side === 'buy' ? '买入' : '卖出';
+                const sideClass = log.side === 'buy' ? 'positive' : 'negative';
+                const date = new Date(log.created_at).toLocaleString('zh-CN');
+                html += `
+                    <div class="log-item">
+                        <div class="log-side ${sideClass}">${side}</div>
+                        <div class="log-info">
+                            <span class="log-symbol">${log.symbol}</span>
+                            <span class="log-amount">${log.amount} @ ${log.price}</span>
+                        </div>
+                        <div class="log-meta">
+                            <span class="log-total">${log.total?.toFixed(2)} USDT</span>
+                            <span class="log-date">${date}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function openStrategyModal(strategy) {
+            const nameMap = {
+                'GridStrategy': '网格策略',
+                'DCAStrategy': '定投策略',
+                'TrendStrategy': '趋势策略',
+                'FundingArbitrageStrategy': '资金费率套利',
+                'ScalpingStrategy': '剥头皮'
+            };
+
+            let html = `
+                <div class="modal-overlay active" id="strategyModal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">${nameMap[strategy.name] || strategy.name}</h3>
+                            <button class="modal-close" onclick="closeStrategyModal()">&times;</button>
+                        </div>
+            `;
+
+            // 策略状态
+            const isRunning = strategy.status === 'running';
+            html += `
+                <div style="margin-bottom: 20px;">
+                    <span style="color: ${isRunning ? 'var(--accent-green)' : 'var(--text-secondary)'};">
+                        <i class="bi bi-circle-fill" style="font-size: 8px;"></i>
+                        ${isRunning ? '运行中' : '已停止'}
+                    </span>
+                    <span style="margin-left: 16px; color: var(--text-secondary);">交易对: ${strategy.params?.symbol || strategy.symbol}</span>
+                </div>
+            `;
+
+            // 策略详细说明
+            const detail = strategyDetails[strategy.name];
+            if (detail) {
+                html += `
+                    <div style="margin-bottom: 20px; padding: 16px; background: var(--bg-glass); border-radius: 8px; border-left: 3px solid var(--accent-blue);">
+                        <h4 style="margin: 0 0 10px 0; color: var(--text-primary); font-size: 14px;">
+                            <i class="bi bi-info-circle"></i> 策略说明
+                        </h4>
+                        <p style="margin: 0 0 12px 0; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
+                            ${detail.overview}
+                        </p>
+                        <details style="margin-top: 10px;">
+                            <summary style="cursor: pointer; color: var(--accent-blue); font-size: 12px; font-weight: 500;">
+                                查看完整说明
+                            </summary>
+                            <div style="margin-top: 12px; font-size: 12px; line-height: 1.8;">
+                                <div style="color: var(--text-primary); font-weight: 500; margin-bottom: 4px;">📌 原理</div>
+                                <div style="color: var(--text-secondary); white-space: pre-line; margin-bottom: 12px;">${detail.principle}</div>
+
+                                <div style="color: var(--text-primary); font-weight: 500; margin-bottom: 4px;">✅ 适用场景</div>
+                                <div style="color: var(--text-secondary); white-space: pre-line; margin-bottom: 12px;">${detail.suitable}</div>
+
+                                <div style="color: var(--text-primary); font-weight: 500; margin-bottom: 4px;">⚠️ 风险提示</div>
+                                <div style="color: var(--accent-yellow); white-space: pre-line; margin-bottom: 12px;">${detail.risk}</div>
+
+                                <div style="color: var(--text-primary); font-weight: 500; margin-bottom: 4px;">⚙️ 核心参数</div>
+                                <div style="color: var(--text-secondary); white-space: pre-line;">${detail.parameters}</div>
+                            </div>
+                        </details>
+                    </div>
+                `;
+            }
+
+            // TrendStrategy 指标显示
+            if (strategy.trend && strategy.trend.indicators) {
+                const ind = strategy.trend.indicators;
+                html += `
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
+                        <div class="indicator-box">
+                            <div class="indicator-name">MACD</div>
+                            <div class="indicator-value">${ind.macd?.toFixed(2) || '-'}</div>
+                        </div>
+                        <div class="indicator-box">
+                            <div class="indicator-name">Signal</div>
+                            <div class="indicator-value">${ind.signal?.toFixed(2) || '-'}</div>
+                        </div>
+                        <div class="indicator-box">
+                            <div class="indicator-name">RSI</div>
+                            <div class="indicator-value">${ind.rsi?.toFixed(1) || '-'}</div>
+                        </div>
+                        <div class="indicator-box">
+                            <div class="indicator-name">价格</div>
+                            <div class="indicator-value">${strategy.trend.current_price?.toFixed(2) || '-'}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // DCA 状态显示
+            if (strategy.dca) {
+                const dca = strategy.dca;
+                html += `
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+                        <div class="indicator-box">
+                            <div class="indicator-name">总投入</div>
+                            <div class="indicator-value">${dca.total_invested?.toFixed(2) || '0'} USDT</div>
+                        </div>
+                        <div class="indicator-box">
+                            <div class="indicator-name">平均价</div>
+                            <div class="indicator-value">${dca.avg_price?.toFixed(2) || '0'}</div>
+                        </div>
+                        <div class="indicator-box">
+                            <div class="indicator-name">盈亏</div>
+                            <div class="indicator-value" style="color: ${dca.profit_loss >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}">
+                                ${dca.profit_loss >= 0 ? '+' : ''}${dca.profit_loss?.toFixed(2) || '0'}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 20px;">
+                        下次定投: ${dca.next_buy_time || '-'} | 定投次数: ${dca.buy_count || 0}
+                    </div>
+                `;
+            }
+
+            // 参数修改表单
+            const params = strategy.params;
+            html += `<div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h4 style="margin: 0;">策略参数</h4>`;
+
+            // 添加预设按钮
+            if (detail && detail.presets) {
+                html += `
+                    <div style="display: flex; gap: 8px;">
+                        <button class="param-preset-btn" onclick="applyPreset('${strategy.name}', 'conservative')">保守</button>
+                        <button class="param-preset-btn active" onclick="applyPreset('${strategy.name}', 'moderate')">稳健</button>
+                        <button class="param-preset-btn" onclick="applyPreset('${strategy.name}', 'aggressive')">激进</button>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+
+            if (strategy.name === 'GridStrategy') {
+                html += `
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">交易对</label>
+                            <select class="param-input" id="param_symbol">
+                                <option value="BTCUSDT" ${params.symbol === 'BTCUSDT' ? 'selected' : ''}>BTCUSDT</option>
+                                <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
+                                <option value="BNBUSDT" ${params.symbol === 'BNBUSDT' ? 'selected' : ''}>BNBUSDT</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">总投资额 (USDT)</label>
+                            <input type="number" class="param-input" id="param_investment" value="${params.investment || 1000}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">建议: 500-5000 USDT</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">网格数量</label>
+                            <input type="number" class="param-input" id="param_grid_count" value="${params.grid_count || 10}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">越多收益越分散，建议5-20</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">价格下限</label>
+                            <input type="number" class="param-input" id="param_price_range_low" value="${params.price_range_low || 0}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">0=自动计算当前价下方30%</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">价格上限</label>
+                            <input type="number" class="param-input" id="param_price_range_high" value="${params.price_range_high || 0}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">0=自动计算当前价上方30%</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">止损比例</label>
+                            <input type="number" step="0.01" class="param-input" id="param_stop_loss" value="${params.stop_loss || 0.05}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">价格跌破后止损出局</small>
+                        </div>
+                    </div>
+                `;
+            } else if (strategy.name === 'DCAStrategy') {
+                html += `
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">每次定投金额 (USDT)</label>
+                            <input type="number" class="param-input" id="param_investment_per_trade" value="${params.investment_per_trade || 100}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">建议: 50-500 USDT</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">定投间隔 (小时)</label>
+                            <input type="number" class="param-input" id="param_interval_hours" value="${params.interval_hours || 24}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">24=每天, 168=每周</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">目标持仓 (USDT)</label>
+                            <input type="number" class="param-input" id="param_target_position" value="${params.target_position || 5000}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">达到目标后暂停定投</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">交易对</label>
+                            <select class="param-input" id="param_symbol">
+                                <option value="BTCUSDT" ${params.symbol === 'BTCUSDT' ? 'selected' : ''}>BTCUSDT</option>
+                                <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
+                                <option value="BNBUSDT" ${params.symbol === 'BNBUSDT' ? 'selected' : ''}>BNBUSDT</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">最高买入价 (0=不限)</label>
+                            <input type="number" class="param-input" id="param_max_price" value="${params.max_price || 0}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">超过此价格暂停买入</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">最低买入价 (0=不限)</label>
+                            <input type="number" class="param-input" id="param_min_price" value="${params.min_price || 0}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">低于此价格暂停买入</small>
+                        </div>
+                    </div>
+                `;
+            } else if (strategy.name === 'TrendStrategy') {
+                html += `
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">交易对</label>
+                            <select class="param-input" id="param_symbol">
+                                <option value="BTCUSDT" ${params.symbol === 'BTCUSDT' ? 'selected' : ''}>BTCUSDT</option>
+                                <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
+                                <option value="BNBUSDT" ${params.symbol === 'BNBUSDT' ? 'selected' : ''}>BNBUSDT</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">投资金额 (USDT)</label>
+                            <input type="number" class="param-input" id="param_investment" value="${params.investment || 1000}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">单笔交易金额</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">K线周期</label>
+                            <select class="param-input" id="param_kline_interval">
+                                <option value="1m" ${params.kline_interval === '1m' ? 'selected' : ''}>1分钟</option>
+                                <option value="5m" ${params.kline_interval === '5m' ? 'selected' : ''}>5分钟</option>
+                                <option value="15m" ${params.kline_interval === '15m' ? 'selected' : ''}>15分钟</option>
+                                <option value="1h" ${params.kline_interval === '1h' ? 'selected' : ''}>1小时</option>
+                                <option value="4h" ${params.kline_interval === '4h' ? 'selected' : ''}>4小时</option>
+                                <option value="1d" ${params.kline_interval === '1d' ? 'selected' : ''}>1天</option>
+                            </select>
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">建议1h或4h，避免频繁交易</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">快线 EMA</label>
+                            <input type="number" class="param-input" id="param_fast_ema" value="${params.fast_ema || 12}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">短期趋势敏感度</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">慢线 EMA</label>
+                            <input type="number" class="param-input" id="param_slow_ema" value="${params.slow_ema || 26}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">长期趋势参考</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">RSI 周期</label>
+                            <input type="number" class="param-input" id="param_rsi_period" value="${params.rsi_period || 14}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">判断超买超卖</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">RSI 超买</label>
+                            <input type="number" class="param-input" id="param_rsi_overbought" value="${params.rsi_overbought || 70}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">>此值考虑卖出</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">止损比例</label>
+                            <input type="number" step="0.001" class="param-input" id="param_stop_loss" value="${params.stop_loss || 0.02}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">最大亏损控制</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">追踪止损</label>
+                            <input type="number" step="0.001" class="param-input" id="param_trailing_stop" value="${params.trailing_stop || 0.01}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">锁定利润用</small>
+                        </div>
+                    </div>
+                `;
+            } else if (strategy.name === 'FundingArbitrageStrategy') {
+                html += `
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">交易对</label>
+                            <select class="param-input" id="param_symbol">
+                                <option value="BTCUSDT" ${params.symbol === 'BTCUSDT' ? 'selected' : ''}>BTCUSDT</option>
+                                <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
+                                <option value="BNBUSDT" ${params.symbol === 'BNBUSDT' ? 'selected' : ''}>BNBUSDT</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">最小资金费率</label>
+                            <input type="number" step="0.0001" class="param-input" id="param_min_funding_rate" value="${params.min_funding_rate || 0.0001}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">高于此费率才开仓</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">最大仓位 (USDT)</label>
+                            <input type="number" class="param-input" id="param_max_position_size" value="${params.max_position_size || 100}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">单币种最大投资</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">最大持仓数</label>
+                            <input type="number" class="param-input" id="param_max_positions" value="${params.max_positions || 3}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">同时持有的币种数</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">持有时间 (小时)</label>
+                            <input type="number" class="param-input" id="param_holding_hours" value="${params.holding_hours || 8}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">建议8小时覆盖结算</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">止盈目标</label>
+                            <input type="number" step="0.001" class="param-input" id="param_hedge_profit_target" value="${params.hedge_profit_target || 0.001}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">达到后自动平仓</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">最大亏损</label>
+                            <input type="number" step="0.001" class="param-input" id="param_max_loss" value="${params.max_loss || 0.002}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">超过此亏损强制平仓</small>
+                        </div>
+                    </div>
+                `;
+            } else if (strategy.name === 'ScalpingStrategy') {
+                html += `
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">交易对</label>
+                            <select class="param-input" id="param_symbol">
+                                <option value="BTCUSDT" ${params.symbol === 'BTCUSDT' ? 'selected' : ''}>BTCUSDT</option>
+                                <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
+                                <option value="BNBUSDT" ${params.symbol === 'BNBUSDT' ? 'selected' : ''}>BNBUSDT</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">仓位大小 (USDT)</label>
+                            <input type="number" class="param-input" id="param_position_size" value="${params.position_size || 50}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">每笔交易金额</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">盈利目标</label>
+                            <input type="number" step="0.001" class="param-input" id="param_profit_target" value="${params.profit_target || 0.001}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">达到即止盈离场</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">止损</label>
+                            <input type="number" step="0.0001" class="param-input" id="param_stop_loss" value="${params.stop_loss || 0.0005}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">严格控制亏损</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">最大持仓时间 (秒)</label>
+                            <input type="number" class="param-input" id="param_max_holding_seconds" value="${params.max_holding_seconds || 60}">
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">最小波动率</label>
+                            <input type="number" step="0.0001" class="param-input" id="param_min_volatility" value="${params.min_volatility || 0.0002}">
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">快速EMA</label>
+                            <input type="number" class="param-input" id="param_ema_fast" value="${params.ema_fast || 5}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">短期趋势判断</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">慢速EMA</label>
+                            <input type="number" class="param-input" id="param_ema_slow" value="${params.ema_slow || 20}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">长期趋势参考</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">每日最大交易</label>
+                            <input type="number" class="param-input" id="param_max_daily_trades" value="${params.max_daily_trades || 20}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">限制交易频率</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">冷却时间 (秒)</label>
+                            <input type="number" class="param-input" id="param_cooldown_seconds" value="${params.cooldown_seconds || 30}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">避免过度交易</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">最大持仓时间 (秒)</label>
+                            <input type="number" class="param-input" id="param_max_holding_seconds" value="${params.max_holding_seconds || 60}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">超时强制平仓</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">最小波动率</label>
+                            <input type="number" step="0.0001" class="param-input" id="param_min_volatility" value="${params.min_volatility || 0.0002}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">波动不够不交易</small>
+                        </div>
+                    </div>
+                `;
+            } else if (strategy.name === 'AdaptiveStrategy') {
+                html += `
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">交易对</label>
+                            <select class="param-input" id="param_symbol">
+                                <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">杠杆倍数</label>
+                            <input type="number" class="param-input" id="param_leverage" value="${params.leverage || 50}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">建议50倍</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">单次本金 (USDT)</label>
+                            <input type="number" class="param-input" id="param_position_value" value="${params.position_value || 20}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">每次开仓的本金</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">止损比例</label>
+                            <input type="number" step="0.01" class="param-input" id="param_stop_loss_pct" value="${params.stop_loss_pct || 0.50}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">本金亏损50%时止损</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">第一止盈</label>
+                            <input type="number" step="0.01" class="param-input" id="param_take_profit_1" value="${params.take_profit_1 || 0.20}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">达到此比例平50%</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">第一止盈比例</label>
+                            <input type="number" step="0.1" class="param-input" id="param_take_profit_1_ratio" value="${params.take_profit_1_ratio || 0.50}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">平50%仓位</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">第二止盈</label>
+                            <input type="number" step="0.01" class="param-input" id="param_take_profit_2" value="${params.take_profit_2 || 0.30}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">达到此比例平剩余</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">挂单超时 (秒)</label>
+                            <input type="number" class="param-input" id="param_pending_timeout" value="${params.pending_timeout || 180}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">3分钟不成交撤销</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">冷却时间 (秒)</label>
+                            <input type="number" class="param-input" id="param_cooldown_seconds" value="${params.cooldown_seconds || 300}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">开仓后等待时间</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">ADX阈值</label>
+                            <input type="number" step="1" class="param-input" id="param_adx_threshold" value="${params.adx_threshold || 25}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">&gt;25趋势/&lt;25震荡</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">快速EMA</label>
+                            <input type="number" class="param-input" id="param_ema_fast" value="${params.ema_fast || 9}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">趋势模式快线</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">慢速EMA</label>
+                            <input type="number" class="param-input" id="param_ema_slow" value="${params.ema_slow || 21}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">趋势模式慢线</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">RSI周期</label>
+                            <input type="number" class="param-input" id="param_rsi_period" value="${params.rsi_period || 14}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">震荡模式RSI</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">RSI超卖</label>
+                            <input type="number" class="param-input" id="param_rsi_oversold" value="${params.rsi_oversold || 30}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">&lt;此值做多</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">RSI超买</label>
+                            <input type="number" class="param-input" id="param_rsi_overbought" value="${params.rsi_overbought || 70}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">&gt;此值做空</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">布林带周期</label>
+                            <input type="number" class="param-input" id="param_bollinger_period" value="${params.bollinger_period || 20}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">布林带计算周期</small>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <div class="param-group">
+                            <label class="param-label">布林带标准差</label>
+                            <input type="number" step="0.1" class="param-input" id="param_bollinger_std" value="${params.bollinger_std || 2}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">布林带宽度倍数</small>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">限价偏移</label>
+                            <input type="number" step="0.001" class="param-input" id="param_limit_offset" value="${params.limit_offset || 0.001}">
+                            <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">挂单价格偏移量</small>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `</div><div class="modal-footer">
+                <button class="btn-modal btn-modal-secondary" onclick="closeStrategyModal()">取消</button>
+                ${isRunning ? `<button class="btn-modal" style="background: var(--accent-red); color: white;" onclick="stopStrategyFromModal('${strategy.name}')"><i class="bi bi-stop-circle"></i> 停止策略</button>` : `<button class="btn-modal" style="background: var(--accent-green); color: white;" onclick="startStrategyFromModal('${strategy.name}')"><i class="bi bi-play-circle"></i> 启动策略</button>`}
+                <button class="btn-modal btn-modal-primary" onclick="saveStrategyParams('${strategy.name}')"><i class="bi bi-check-lg"></i> 保存参数</button>
+            </div></div></div>`;
+
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+
+        function closeStrategyModal() {
+            const modal = document.getElementById('strategyModal');
+            if (modal) modal.remove();
+        }
+
+        // 应用预设参数
+        function applyPreset(strategyName, presetType) {
+            const detail = strategyDetails[strategyName];
+            if (!detail || !detail.presets) return;
+
+            // 获取当前选择的交易对
+            const symbolSelect = document.getElementById('param-symbol-' + strategyName);
+            const currentSymbol = symbolSelect ? symbolSelect.value : 'BTCUSDT';
+
+            // 获取该交易对的预设，没有则用BTCUSDT的
+            const symbolPresets = detail.presets[currentSymbol] || detail.presets['BTCUSDT'];
+            if (!symbolPresets || !symbolPresets[presetType]) return;
+
+            const preset = symbolPresets[presetType];
+
+            // 更新预设按钮状态
+            document.querySelectorAll('.param-preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === (presetType === 'conservative' ? '保守' : presetType === 'moderate' ? '稳健' : '激进')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // 应用预设参数 (使用带策略名称的ID格式)
+            const prefix = 'param-';
+            const suffix = '-' + strategyName;
+
+            if (strategyName === 'GridStrategy') {
+                if (preset.grid_count !== undefined) document.getElementById(prefix + 'grid_count' + suffix).value = preset.grid_count;
+                if (preset.investment !== undefined) document.getElementById(prefix + 'investment' + suffix).value = preset.investment;
+                if (preset.stop_loss !== undefined) document.getElementById(prefix + 'stop_loss' + suffix).value = preset.stop_loss;
+                if (preset.take_profit !== undefined) document.getElementById(prefix + 'take_profit' + suffix).value = preset.take_profit;
+            } else if (strategyName === 'DCAStrategy') {
+                if (preset.investment_per_trade !== undefined) document.getElementById(prefix + 'investment_per_trade' + suffix).value = preset.investment_per_trade;
+                if (preset.interval_hours !== undefined) document.getElementById(prefix + 'interval_hours' + suffix).value = preset.interval_hours;
+                if (preset.target_position !== undefined) document.getElementById(prefix + 'target_position' + suffix).value = preset.target_position;
+            } else if (strategyName === 'TrendStrategy') {
+                if (preset.investment !== undefined) document.getElementById(prefix + 'investment' + suffix).value = preset.investment;
+                if (preset.kline_interval !== undefined) document.getElementById(prefix + 'kline_interval' + suffix).value = preset.kline_interval;
+                if (preset.fast_ema !== undefined) document.getElementById(prefix + 'fast_ema' + suffix).value = preset.fast_ema;
+                if (preset.slow_ema !== undefined) document.getElementById(prefix + 'slow_ema' + suffix).value = preset.slow_ema;
+                if (preset.rsi_period !== undefined) document.getElementById(prefix + 'rsi_period' + suffix).value = preset.rsi_period;
+                if (preset.stop_loss !== undefined) document.getElementById(prefix + 'stop_loss' + suffix).value = preset.stop_loss;
+                if (preset.trailing_stop !== undefined) document.getElementById(prefix + 'trailing_stop' + suffix).value = preset.trailing_stop;
+            } else if (strategyName === 'FundingArbitrageStrategy') {
+                if (preset.min_funding_rate !== undefined) document.getElementById(prefix + 'min_funding_rate' + suffix).value = preset.min_funding_rate;
+                if (preset.max_position_size !== undefined) document.getElementById(prefix + 'max_position_size' + suffix).value = preset.max_position_size;
+                if (preset.max_positions !== undefined) document.getElementById(prefix + 'max_positions' + suffix).value = preset.max_positions;
+                if (preset.hedge_profit_target !== undefined) document.getElementById(prefix + 'hedge_profit_target' + suffix).value = preset.hedge_profit_target;
+                if (preset.max_loss !== undefined) document.getElementById(prefix + 'max_loss' + suffix).value = preset.max_loss;
+                if (preset.holding_hours !== undefined) document.getElementById(prefix + 'holding_hours' + suffix).value = preset.holding_hours;
+            } else if (strategyName === 'ScalpingStrategy') {
+                if (preset.position_size !== undefined) document.getElementById(prefix + 'position_size' + suffix).value = preset.position_size;
+                if (preset.profit_target !== undefined) document.getElementById(prefix + 'profit_target' + suffix).value = preset.profit_target;
+                if (preset.stop_loss !== undefined) document.getElementById(prefix + 'stop_loss' + suffix).value = preset.stop_loss;
+                if (preset.max_daily_trades !== undefined) document.getElementById(prefix + 'max_daily_trades' + suffix).value = preset.max_daily_trades;
+                if (preset.max_holding_seconds !== undefined) document.getElementById(prefix + 'max_holding_seconds' + suffix).value = preset.max_holding_seconds;
+                if (preset.min_volatility !== undefined) document.getElementById(prefix + 'min_volatility' + suffix).value = preset.min_volatility;
+                if (preset.ema_fast !== undefined) document.getElementById(prefix + 'ema_fast' + suffix).value = preset.ema_fast;
+                if (preset.ema_slow !== undefined) document.getElementById(prefix + 'ema_slow' + suffix).value = preset.ema_slow;
+                if (preset.cooldown_seconds !== undefined) document.getElementById(prefix + 'cooldown_seconds' + suffix).value = preset.cooldown_seconds;
+            }
+        }
+
+        // 从模态框启动策略
+        function startStrategyFromModal(name) {
+            closeStrategyModal();
+            startStrategy(name);
+        }
+
+        // 从模态框停止策略
+        function stopStrategyFromModal(name) {
+            closeStrategyModal();
+            stopStrategy(name);
+        }
+
+        function saveStrategyParams(name) {
+            const typeMap = {
+                'GridStrategy': 'grid',
+                'DCAStrategy': 'dca',
+                'TrendStrategy': 'trend',
+                'FundingArbitrageStrategy': 'funding',
+                'ScalpingStrategy': 'scalping',
+                'AdaptiveStrategy': 'adaptive'
+            };
+
+            const prefix = 'param-';
+            const suffix = '-' + name;
+            const getId = (key) => document.getElementById(prefix + key + suffix);
+
+            let params = {};
+
+            if (name === 'GridStrategy') {
+                params = {
+                    symbol: getId('symbol').value,
+                    grid_count: parseInt(getId('grid_count').value),
+                    investment: parseFloat(getId('investment').value),
+                    price_range_low: parseFloat(getId('price_range_low').value),
+                    price_range_high: parseFloat(getId('price_range_high').value),
+                    stop_loss: parseFloat(getId('stop_loss').value),
+                    take_profit: parseFloat(getId('take_profit').value)
+                };
+            } else if (name === 'DCAStrategy') {
+                params = {
+                    symbol: getId('symbol').value,
+                    investment_per_trade: parseFloat(getId('investment_per_trade').value),
+                    interval_hours: parseInt(getId('interval_hours').value),
+                    target_position: parseFloat(getId('target_position').value),
+                    max_price: parseFloat(getId('max_price').value),
+                    min_price: parseFloat(getId('min_price').value)
+                };
+            } else if (name === 'TrendStrategy') {
+                params = {
+                    symbol: getId('symbol').value,
+                    investment: parseFloat(getId('investment').value),
+                    kline_interval: getId('kline_interval').value,
+                    fast_ema: parseInt(getId('fast_ema').value),
+                    slow_ema: parseInt(getId('slow_ema').value),
+                    rsi_period: parseInt(getId('rsi_period').value),
+                    rsi_overbought: parseFloat(getId('rsi_overbought').value),
+                    stop_loss: parseFloat(getId('stop_loss').value),
+                    trailing_stop: parseFloat(getId('trailing_stop').value)
+                };
+            } else if (name === 'FundingArbitrageStrategy') {
+                params = {
+                    symbol: getId('symbol').value,
+                    min_funding_rate: parseFloat(getId('min_funding_rate').value),
+                    max_position_size: parseFloat(getId('max_position_size').value),
+                    max_positions: parseInt(getId('max_positions').value),
+                    holding_hours: parseInt(getId('holding_hours').value),
+                    hedge_profit_target: parseFloat(getId('hedge_profit_target').value),
+                    max_loss: parseFloat(getId('max_loss').value)
+                };
+            } else if (name === 'ScalpingStrategy') {
+                params = {
+                    symbol: getId('symbol').value,
+                    position_size: parseFloat(getId('position_size').value),
+                    profit_target: parseFloat(getId('profit_target').value),
+                    stop_loss: parseFloat(getId('stop_loss').value),
+                    max_holding_seconds: parseInt(getId('max_holding_seconds').value),
+                    min_volatility: parseFloat(getId('min_volatility').value),
+                    ema_fast: parseInt(getId('ema_fast').value),
+                    ema_slow: parseInt(getId('ema_slow').value),
+                    max_daily_trades: parseInt(getId('max_daily_trades').value),
+                    cooldown_seconds: parseInt(getId('cooldown_seconds').value)
+                };
+            } else if (name === 'AdaptiveStrategy') {
+                params = {
+                    symbol: getId('symbol').value,
+                    leverage: parseInt(getId('leverage').value),
+                    position_value: parseFloat(getId('position_value').value),
+                    stop_loss_pct: parseFloat(getId('stop_loss_pct').value),
+                    take_profit_1: parseFloat(getId('take_profit_1').value),
+                    take_profit_1_ratio: parseFloat(getId('take_profit_1_ratio').value),
+                    take_profit_2: parseFloat(getId('take_profit_2').value),
+                    pending_timeout: parseInt(getId('pending_timeout').value),
+                    cooldown_seconds: parseInt(getId('cooldown_seconds').value),
+                    adx_threshold: parseFloat(getId('adx_threshold').value)
+                };
+            }
+
+            fetch('/api/strategy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update',
+                    strategy_type: typeMap[name],
+                    params: params
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', '保存成功', '策略参数已更新');
+                    closeStrategyModal();
+                    loadStrategies();
+                } else {
+                    showToast('error', '保存失败', data.error || '未知错误');
+                }
+            })
+            .catch(err => {
+                console.error('保存参数失败:', err);
+                showToast('error', '保存失败', err.message || '网络错误');
+            });
+        }
+
+        // 修改策略列表，添加查看详情按钮
+        const originalLoadStrategies = loadStrategies;
+    </script>
+</body>
+</html>
