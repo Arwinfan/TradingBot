@@ -237,17 +237,25 @@ class FuturesClient:
         """
         from config.settings import Config
 
+        logger.info(f"close_position 开始: symbol={symbol}, side={side}, quantity={quantity}, order_type={order_type}")
+
         # 重新获取最新持仓信息确保准确
         positions = self.get_positions()
+        logger.info(f"当前所有持仓: {positions}")
+
         position_found = False
         actual_size = 0
+        actual_side = None
         for p in positions:
             if p['symbol'] == symbol:
                 actual_size = p['size']
+                actual_side = p['side']
                 position_found = True
+                logger.info(f"找到持仓: symbol={symbol}, actual_size={actual_size}, actual_side={actual_side}")
                 break
 
         if not position_found or actual_size == 0:
+            logger.warning(f"没有持仓或持仓已平: symbol={symbol}, position_found={position_found}, actual_size={actual_size}")
             return {'success': False, 'error': '没有持仓或持仓已平'}
 
         # 如果未指定数量，使用实际持仓
@@ -260,26 +268,39 @@ class FuturesClient:
         if quantity <= 0:
             return {'success': False, 'error': '持仓数量无效'}
 
-        # 根据交易对精度调整数量
-        precision = Config.QUANTITY_PRECISION.get(symbol, 3)
-        quantity = float(round(quantity, precision))
-
-        # 确保数量不少于最小值
+        # 确保数量不少于最小值（精度调整前）
         min_qty = Config.MIN_QUANTITY.get(symbol, 0.001)
         if quantity < min_qty:
             quantity = min_qty
 
-        logger.info(f"平仓: symbol={symbol}, side={side}, quantity={quantity}, order_type={order_type}")
+        # 根据交易对精度调整数量
+        precision = Config.QUANTITY_PRECISION.get(symbol, 3)
+        quantity = float(round(quantity, precision))
+
+        # 再次检查数量是否有效
+        if quantity <= 0:
+            logger.error(f"精度调整后数量为0: symbol={symbol}, original_quantity={quantity}, precision={precision}")
+            return {'success': False, 'error': f'数量调整后无效 (precision={precision})'}
+
+        logger.info(f"平仓执行: symbol={symbol}, side={side}, actual_side={actual_side}, quantity={quantity}, order_type={order_type}")
+
+        # 格式化数量为字符串，保持正确的精度
+        quantity_str = f"{quantity:.{precision}f}"
 
         # 平多仓：卖出，平空仓：买入
         if side == 'long':
             if order_type == 'limit':
-                return self.limit_sell(symbol, quantity, price)
-            return self.market_sell(symbol, quantity)
+                result = self.limit_sell(symbol, quantity_str, price)
+            else:
+                result = self.market_sell(symbol, quantity_str)
         else:
             if order_type == 'limit':
-                return self.limit_buy(symbol, quantity, price)
-            return self.market_buy(symbol, quantity)
+                result = self.limit_buy(symbol, quantity_str, price)
+            else:
+                result = self.market_buy(symbol, quantity_str)
+
+        logger.info(f"平仓结果: {result}")
+        return result
 
     def limit_buy(self, symbol: str, quantity: float, price: float) -> Dict:
         """限价买入/做多"""
