@@ -29,8 +29,8 @@ HTTP_PROXY = ''
 
 # ==================== 交易配置 ====================
 # 交易对列表 (期货格式: BTCUSDT 无斜杠)
-SYMBOLS_FUTURES = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT']
-SYMBOLS_SPOT = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT']
+SYMBOLS_FUTURES = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'DOTUSDT']
+SYMBOLS_SPOT = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT', 'ADA/USDT', 'DOGE/USDT', 'DOT/USDT']
 
 # 默认交易对
 DEFAULT_SYMBOL_SPOT = 'BTC/USDT'
@@ -41,6 +41,11 @@ MIN_QUANTITY = {
     'BTCUSDT': 0.001,
     'ETHUSDT': 0.01,
     'BNBUSDT': 0.1,
+    'SOLUSDT': 0.01,
+    'XRPUSDT': 1,
+    'ADAUSDT': 1,
+    'DOGEUSDT': 1,
+    'DOTUSDT': 0.1,
 }
 
 # 价格精度
@@ -48,6 +53,11 @@ PRICE_PRECISION = {
     'BTCUSDT': 2,
     'ETHUSDT': 2,
     'BNBUSDT': 2,
+    'SOLUSDT': 2,
+    'XRPUSDT': 4,
+    'ADAUSDT': 4,
+    'DOGEUSDT': 5,
+    'DOTUSDT': 2,
 }
 
 # 数量精度 (合约乘数) - 与交易所精度一致
@@ -55,6 +65,11 @@ QUANTITY_PRECISION = {
     'BTCUSDT': 4,  # stepSize = 0.0001
     'ETHUSDT': 3,  # stepSize = 0.001
     'BNBUSDT': 3,  # stepSize = 0.001
+    'SOLUSDT': 2,  # stepSize = 0.01
+    'XRPUSDT': 1,  # stepSize = 0.1
+    'ADAUSDT': 1,  # stepSize = 0.1
+    'DOGEUSDT': 0,  # stepSize = 1
+    'DOTUSDT': 2,  # stepSize = 0.01
 }
 
 # ==================== 风险管理 ====================
