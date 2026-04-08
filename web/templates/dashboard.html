@@ -1625,7 +1625,7 @@
                 html += `${pnl >= 0 ? '+' : ''}${pnl.toFixed(4)} USDT<br><span style="font-size:11px">(${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%)</span>`;
                 html += `</td>`;
                 html += `<td>${pos.leverage || 1}x</td>`;
-                html += `<td><button class="btn-close-position" onclick="closePosition('${pos.symbol}', '${pos.side}')">平仓</button></td>`;
+                html += `<td><button class="btn-close-position" onclick="openClosePositionModal('${pos.symbol}', '${pos.side}', ${size}, ${entryPrice})">平仓</button></td>`;
                 html += `</tr>`;
             });
 
@@ -1646,7 +1646,7 @@
             .then(data => {
                 if (data.success) {
                     showToast('success', '平仓成功', `${symbol} 已平仓`);
-                    loadDashboard();
+                    loadDashboardData();
                 } else {
                     showToast('error', '平仓失败', data.error || '未知错误');
                 }
@@ -1743,7 +1743,7 @@
             .then(data => {
                 if (data.success) {
                     showToast('success', '平仓成功', `${symbol} 已平仓`);
-                    loadDashboard();
+                    loadDashboardData();
                 } else {
                     showToast('error', '平仓失败', data.error || '未知错误');
                 }
