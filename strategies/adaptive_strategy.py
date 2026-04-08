@@ -379,7 +379,8 @@ class AdaptiveStrategy(BaseStrategy):
             if elapsed >= self.pending_timeout:
                 logger.info(f"{self.name}: 挂单超时({elapsed:.0f}秒)，撤销挂单")
                 self._cancel_pending_order()
-                self.last_trade_time = datetime.now() - timedelta(seconds=self.cooldown_seconds - 10)
+                # 重置冷却时间，从现在开始计算
+                self.last_trade_time = datetime.now()
                 return None
 
             return None
@@ -492,17 +493,28 @@ class AdaptiveStrategy(BaseStrategy):
 
         # 计算市场状态
         adx = self._calculate_adx(ohlcv)
-        ema_fast_val = self._calculate_ema(closes, self.ema_fast)
-        ema_slow_val = self._calculate_ema(closes, self.ema_slow)
         rsi = self._calculate_rsi(closes, self.rsi_period)
         upper_band, middle_band, lower_band = self._calculate_bollinger(closes)
+
+        # 计算EMA（使用前一根K线数据检测金叉/死叉）
+        ema_fast_val = self._calculate_ema(closes, self.ema_fast)
+        ema_slow_val = self._calculate_ema(closes, self.ema_slow)
+
+        # 前一根K线的EMA值
+        prev_closes = closes[:-1]
+        if len(prev_closes) >= self.ema_slow:
+            prev_ema_fast = self._calculate_ema(prev_closes, self.ema_fast)
+            prev_ema_slow = self._calculate_ema(prev_closes, self.ema_slow)
+        else:
+            prev_ema_fast = ema_fast_val
+            prev_ema_slow = ema_slow_val
 
         confidence = 0.8
 
         if adx > self.adx_threshold:
             # ========== 趋势模式 ==========
-            # EMA金叉 -> 做多
-            if ema_fast_val > ema_slow_val and closes[-1] > closes[-2]:
+            # EMA金叉 -> 做多 (fast从下方穿越slow)
+            if prev_ema_fast <= prev_ema_slow and ema_fast_val > ema_slow_val:
                 confidence += 0.15
                 amount = self._calculate_position_amount(current_price)
                 # 限价挂单价格
@@ -516,8 +528,8 @@ class AdaptiveStrategy(BaseStrategy):
                     reason=f"趋势模式-EMA金叉 ADX={adx:.1f} RSI={rsi:.1f}",
                 )
 
-            # EMA死叉 -> 做空
-            if ema_fast_val < ema_slow_val and closes[-1] < closes[-2]:
+            # EMA死叉 -> 做空 (fast从上方穿越slow)
+            if prev_ema_fast >= prev_ema_slow and ema_fast_val < ema_slow_val:
                 confidence += 0.15
                 amount = self._calculate_position_amount(current_price)
                 limit_price = current_price * (1 + self.limit_offset)
@@ -587,89 +599,54 @@ class AdaptiveStrategy(BaseStrategy):
         # 计算盈亏
         if pos.side == 'long':
             pnl_pct = (mark_price - pos.entry_price) / pos.entry_price
+            close_type = SignalType.SELL
+            price_cond = mark_price <= pos.stop_loss_price
         else:
             pnl_pct = (pos.entry_price - mark_price) / pos.entry_price
+            close_type = SignalType.BUY
+            price_cond = mark_price >= pos.stop_loss_price
 
         # 计算实际盈利(USDT)
         actual_pnl = self._get_actual_pnl(mark_price)
+        remaining = pos.amount - self._get_closed_amount(pos)
 
         # ========== 止盈检查(按实际收益) ==========
-        if pos.side == 'long':
-            if not pos.take_profit_1_triggered and actual_pnl >= self.take_profit_1:
-                close_amount = pos.amount * self.take_profit_1_ratio
-                pos.take_profit_1_triggered = True
+        # 第一止盈
+        if not pos.take_profit_1_triggered and actual_pnl >= self.take_profit_1:
+            close_amount = pos.amount * self.take_profit_1_ratio
+            pos.take_profit_1_triggered = True
+            return Signal(
+                type=close_type,
+                symbol=self.symbol,
+                price=0,  # 市价单
+                amount=close_amount,
+                confidence=0.95,
+                reason=f"止盈1: +{actual_pnl:.2f}U (平{self.take_profit_1_ratio*100:.0f}%)",
+            )
+
+        # 第二止盈
+        if not pos.take_profit_2_triggered and actual_pnl >= self.take_profit_2:
+            if remaining > 0:
+                pos.take_profit_2_triggered = True
                 return Signal(
-                    type=SignalType.SELL,
+                    type=close_type,
                     symbol=self.symbol,
                     price=0,  # 市价单
-                    amount=close_amount,
+                    amount=remaining,
                     confidence=0.95,
-                    reason=f"止盈1: +{actual_pnl:.2f}U (平{self.take_profit_1_ratio*100:.0f}%)",
+                    reason=f"止盈2: +{actual_pnl:.2f}U (平剩余)",
                 )
-
-            if not pos.take_profit_2_triggered and actual_pnl >= self.take_profit_2:
-                remaining = pos.amount - self._get_closed_amount(pos)
-                if remaining > 0:
-                    pos.take_profit_2_triggered = True
-                    return Signal(
-                        type=SignalType.SELL,
-                        symbol=self.symbol,
-                        price=0,  # 市价单
-                        amount=remaining,
-                        confidence=0.95,
-                        reason=f"止盈2: +{actual_pnl:.2f}U (平剩余)",
-                    )
-        else:
-            if not pos.take_profit_1_triggered and actual_pnl >= self.take_profit_1:
-                close_amount = pos.amount * self.take_profit_1_ratio
-                pos.take_profit_1_triggered = True
-                return Signal(
-                    type=SignalType.BUY,
-                    symbol=self.symbol,
-                    price=0,  # 市价单
-                    amount=close_amount,
-                    confidence=0.95,
-                    reason=f"止盈1: +{actual_pnl:.2f}U (平{self.take_profit_1_ratio*100:.0f}%)",
-                )
-
-            if not pos.take_profit_2_triggered and actual_pnl >= self.take_profit_2:
-                remaining = pos.amount - self._get_closed_amount(pos)
-                if remaining > 0:
-                    pos.take_profit_2_triggered = True
-                    return Signal(
-                        type=SignalType.BUY,
-                        symbol=self.symbol,
-                        price=0,  # 市价单
-                        amount=remaining,
-                        confidence=0.95,
-                        reason=f"止盈2: +{actual_pnl:.2f}U (平剩余)",
-                    )
 
         # ========== 止损检查 ==========
-        if pos.side == 'long':
-            if mark_price <= pos.stop_loss_price:
-                remaining = pos.amount - self._get_closed_amount(pos)
-                if remaining > 0:
-                    return Signal(
-                        type=SignalType.SELL,
-                        symbol=self.symbol,
-                        price=0,  # 市价单
-                        amount=remaining,
-                        confidence=0.9,
-                        reason=f"止损: {pnl_pct:.2%}",
-                    )
-        else:
-            if mark_price >= pos.stop_loss_price:
-                remaining = pos.amount - self._get_closed_amount(pos)
-                if remaining > 0:
-                    return Signal(
-                        type=SignalType.BUY,
-                        symbol=self.symbol,
-                        price=0,  # 市价单
-                        amount=remaining,
-                        confidence=0.9,
-                        reason=f"止损: {pnl_pct:.2%}",
-                    )
+        if price_cond and remaining > 0:
+            return Signal(
+                type=close_type,
+                symbol=self.symbol,
+                price=0,  # 市价单
+                amount=remaining,
+                confidence=0.9,
+                reason=f"止损: {pnl_pct:.2%}",
+            )
 
         return None
 
@@ -702,8 +679,9 @@ class AdaptiveStrategy(BaseStrategy):
         if pos.take_profit_1_triggered:
             closed += pos.amount * self.take_profit_1_ratio
         if pos.take_profit_2_triggered:
+            # 第二止盈平的是剩余的 (1 - take_profit_1_ratio) * amount
             closed += pos.amount * (1 - self.take_profit_1_ratio)
-        return closed
+        return min(closed, pos.amount)  # 确保不超过总数量
 
     def _calculate_position_amount(self, current_price: float) -> float:
         """计算开仓数量"""
@@ -891,13 +869,30 @@ class AdaptiveStrategy(BaseStrategy):
                 # 下市价单
                 if signal.type == SignalType.BUY:
                     order = client.market_buy(self.symbol, rounded_amount)
+                    action = 'buy'
                 else:
                     order = client.market_sell(self.symbol, rounded_amount)
+                    action = 'sell'
 
-                logger.info(f"{self.name}: 市价{'买入' if signal.type == SignalType.BUY else '卖出'}成功 {rounded_amount}")
+                logger.info(f"{self.name}: 市价{action}成功 {rounded_amount}")
 
-                # 调用父类处理持仓更新和记录
-                result = super().execute(signal)
+                # 保存交易记录
+                self._data.save_trade({
+                    'order_id': order.get('orderId'),
+                    'symbol': signal.symbol,
+                    'side': action,
+                    'order_type': 'market',
+                    'price': 0,
+                    'amount': signal.amount,
+                    'total': rounded_amount * (self.current_position.entry_price if self.current_position else 0),
+                    'strategy': self.name,
+                    'order_id_exchange': order.get('orderId'),
+                    'status': 'closed',
+                })
+
+                # 更新策略统计
+                self._data.update_strategy_stats(self.name, 0)
+
                 return {
                     'success': True,
                     'result': order,
