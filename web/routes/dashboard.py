@@ -37,6 +37,12 @@ def get_dashboard_data():
     # 获取持仓
     try:
         positions = client.get_positions()
+        # 为持仓添加当前价格
+        for pos in positions:
+            symbol = pos.get('symbol')
+            if symbol:
+                ticker = market.get_ticker(symbol)
+                pos['current_price'] = ticker.get('last', pos.get('entry_price', 0))
     except Exception as e:
         logger.warning(f"获取持仓失败: {e}")
         positions = []

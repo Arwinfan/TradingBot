@@ -109,6 +109,44 @@ def cancel_order(order_id):
         }), 500
 
 
+@trading_bp.route('/api/order/close', methods=['POST'])
+def close_position():
+    """平仓"""
+    from core.futures_client import get_futures_client
+
+    data = request.get_json()
+    symbol = data.get('symbol')
+    side = data.get('side')
+
+    if not symbol or not side:
+        return jsonify({
+            'success': False,
+            'error': '缺少参数',
+        }), 400
+
+    client = get_futures_client()
+
+    try:
+        result = client.close_position(symbol, side)
+        if result.get('success'):
+            return jsonify({
+                'success': True,
+                'message': '平仓成功',
+                'result': result,
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': result.get('error', '平仓失败'),
+            }), 400
+    except Exception as e:
+        logger.error(f"平仓失败: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+        }), 500
+
+
 @trading_bp.route('/api/open-orders')
 def get_open_orders():
     """获取未完成订单"""

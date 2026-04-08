@@ -224,6 +224,24 @@ class FuturesClient:
         result['success'] = True
         return result
 
+    def close_position(self, symbol: str, side: str, quantity: float = None) -> Dict:
+        """平仓"""
+        # 如果没有指定数量，先获取持仓
+        if quantity is None:
+            positions = self.get_positions()
+            for p in positions:
+                if p['symbol'] == symbol:
+                    quantity = p['size']
+                    break
+            if quantity is None:
+                return {'success': False, 'error': '没有持仓'}
+
+        # 平多仓：卖出，平空仓：买入
+        if side == 'long':
+            return self.market_sell(symbol, quantity)
+        else:
+            return self.market_buy(symbol, quantity)
+
     def limit_buy(self, symbol: str, quantity: float, price: float) -> Dict:
         """限价买入/做多"""
         result = self._request('POST', '/fapi/v1/order', signed=True, params={
