@@ -237,19 +237,27 @@ class FuturesClient:
         """
         from config.settings import Config
 
-        # 如果未指定数量，自动获取全部持仓
-        if quantity is None:
-            positions = self.get_positions()
-            position_found = False
-            for p in positions:
-                if p['symbol'] == symbol:
-                    quantity = p['size']
-                    position_found = True
-                    break
+        # 重新获取最新持仓信息确保准确
+        positions = self.get_positions()
+        position_found = False
+        actual_size = 0
+        for p in positions:
+            if p['symbol'] == symbol:
+                actual_size = p['size']
+                position_found = True
+                break
 
-            if not position_found:
-                return {'success': False, 'error': '没有持仓'}
-        elif quantity <= 0:
+        if not position_found or actual_size == 0:
+            return {'success': False, 'error': '没有持仓或持仓已平'}
+
+        # 如果未指定数量，使用实际持仓
+        if quantity is None or quantity <= 0:
+            quantity = actual_size
+        else:
+            # 确保不超过实际持仓
+            quantity = min(quantity, actual_size)
+
+        if quantity <= 0:
             return {'success': False, 'error': '持仓数量无效'}
 
         # 根据交易对精度调整数量
@@ -260,6 +268,8 @@ class FuturesClient:
         min_qty = Config.MIN_QUANTITY.get(symbol, 0.001)
         if quantity < min_qty:
             quantity = min_qty
+
+        logger.info(f"平仓: symbol={symbol}, side={side}, quantity={quantity}, order_type={order_type}")
 
         # 平多仓：卖出，平空仓：买入
         if side == 'long':

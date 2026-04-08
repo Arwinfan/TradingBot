@@ -112,7 +112,7 @@ def cancel_order(order_id):
 @trading_bp.route('/api/order/close', methods=['POST'])
 def close_position():
     """平仓"""
-    from core.futures_client import get_futures_client
+    from core.futures_client import get_futures_client, APIError
 
     data = request.get_json()
     symbol = data.get('symbol')
@@ -120,6 +120,8 @@ def close_position():
     quantity = data.get('quantity')
     order_type = data.get('type', 'market')
     price = data.get('price')
+
+    logger.info(f"收到平仓请求: symbol={symbol}, side={side}, quantity={quantity}, type={order_type}")
 
     if not symbol or not side:
         return jsonify({
@@ -138,6 +140,7 @@ def close_position():
     try:
         result = client.close_position(symbol, side, quantity=quantity,
                                      order_type=order_type, price=price)
+        logger.info(f"平仓结果: {result}")
         if result.get('success'):
             return jsonify({
                 'success': True,
@@ -149,6 +152,12 @@ def close_position():
                 'success': False,
                 'error': result.get('error', '平仓失败'),
             }), 400
+    except APIError as e:
+        logger.error(f"平仓API失败: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+        }), 500
     except Exception as e:
         logger.error(f"平仓失败: {e}")
         return jsonify({
