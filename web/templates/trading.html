@@ -1533,6 +1533,23 @@
             background: var(--bg-elevated);
         }
 
+        .param-form-container .param-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent-blue);
+        }
+
+        .param-form-container .param-item.param-checkbox {
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .param-form-container .param-item.param-checkbox label {
+            margin-bottom: 0;
+        }
+
         /* 操作按钮 */
         .detail-actions {
             display: flex;
@@ -3453,7 +3470,12 @@ cooldown_seconds：冷却时间`,
                     { key: 'kline_interval', label: 'K线周期', type: 'text' },
                     { key: 'fast_ema', label: '快线EMA', type: 'number' },
                     { key: 'slow_ema', label: '慢线EMA', type: 'number' },
-                    { key: 'rsi_period', label: 'RSI周期', type: 'number' }
+                    { key: 'signal_ema', label: '信号线EMA', type: 'number' },
+                    { key: 'rsi_period', label: 'RSI周期', type: 'number' },
+                    { key: 'rsi_overbought', label: 'RSI超买', type: 'number' },
+                    { key: 'rsi_oversold', label: 'RSI超卖', type: 'number' },
+                    { key: 'stop_loss', label: '止损比例', type: 'number' },
+                    { key: 'trailing_stop', label: '追踪止损', type: 'number' }
                 ],
                 'FundingArbitrageStrategy': [
                     { key: 'symbol', label: '交易对', type: 'select', options: symbols },
@@ -3471,10 +3493,16 @@ cooldown_seconds：冷却时间`,
                     { key: 'stop_loss', label: '止损', type: 'number' },
                     { key: 'max_holding_seconds', label: '最大持仓(秒)', type: 'number' },
                     { key: 'min_volatility', label: '最小波动率', type: 'number' },
+                    { key: 'kline_interval', label: 'K线周期', type: 'text' },
                     { key: 'ema_fast', label: '快速EMA', type: 'number' },
                     { key: 'ema_slow', label: '慢速EMA', type: 'number' },
+                    { key: 'rsi_period', label: 'RSI周期', type: 'number' },
+                    { key: 'rsi_overbought', label: 'RSI超买', type: 'number' },
+                    { key: 'rsi_oversold', label: 'RSI超卖', type: 'number' },
                     { key: 'max_daily_trades', label: '每日最大交易', type: 'number' },
-                    { key: 'cooldown_seconds', label: '冷却时间(秒)', type: 'number' }
+                    { key: 'cooldown_seconds', label: '冷却时间(秒)', type: 'number' },
+                    { key: 'use_rsi_filter', label: 'RSI过滤', type: 'checkbox' },
+                    { key: 'use_macd_filter', label: 'MACD过滤', type: 'checkbox' }
                 ],
                 'AdaptiveStrategy': [
                     { key: 'symbol', label: '交易对', type: 'select', options: ['ETHUSDT'] },
@@ -3501,6 +3529,13 @@ cooldown_seconds：冷却时间`,
                             <select id="param-${p.key}-${strategyName}" class="param-select" data-param="${p.key}">
                                 ${p.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
                             </select>
+                        </div>
+                    `;
+                } else if (p.type === 'checkbox') {
+                    html += `
+                        <div class="param-item param-checkbox">
+                            <label>${p.label}</label>
+                            <input type="checkbox" id="param-${p.key}-${strategyName}" data-param="${p.key}">
                         </div>
                     `;
                 } else {
@@ -3673,6 +3708,9 @@ cooldown_seconds：冷却时间`,
                         if (input.tagName === 'SELECT') {
                             // 对于select元素，设置value会自动选中对应选项
                             input.value = value;
+                        } else if (input.type === 'checkbox') {
+                            // 对于checkbox，设置checked属性
+                            input.checked = value === true || value === 'true';
                         } else {
                             input.value = value;
                         }
@@ -4389,8 +4427,10 @@ cooldown_seconds：冷却时间`,
                     kline_interval: getId('kline_interval').value,
                     fast_ema: parseInt(getId('fast_ema').value),
                     slow_ema: parseInt(getId('slow_ema').value),
+                    signal_ema: parseInt(getId('signal_ema').value),
                     rsi_period: parseInt(getId('rsi_period').value),
                     rsi_overbought: parseFloat(getId('rsi_overbought').value),
+                    rsi_oversold: parseFloat(getId('rsi_oversold').value),
                     stop_loss: parseFloat(getId('stop_loss').value),
                     trailing_stop: parseFloat(getId('trailing_stop').value)
                 };
@@ -4412,10 +4452,16 @@ cooldown_seconds：冷却时间`,
                     stop_loss: parseFloat(getId('stop_loss').value),
                     max_holding_seconds: parseInt(getId('max_holding_seconds').value),
                     min_volatility: parseFloat(getId('min_volatility').value),
+                    kline_interval: getId('kline_interval').value,
                     ema_fast: parseInt(getId('ema_fast').value),
                     ema_slow: parseInt(getId('ema_slow').value),
+                    rsi_period: parseInt(getId('rsi_period').value),
+                    rsi_overbought: parseFloat(getId('rsi_overbought').value),
+                    rsi_oversold: parseFloat(getId('rsi_oversold').value),
                     max_daily_trades: parseInt(getId('max_daily_trades').value),
-                    cooldown_seconds: parseInt(getId('cooldown_seconds').value)
+                    cooldown_seconds: parseInt(getId('cooldown_seconds').value),
+                    use_rsi_filter: document.getElementById('param-use_rsi_filter-' + name).checked,
+                    use_macd_filter: document.getElementById('param-use_macd_filter-' + name).checked
                 };
             } else if (name === 'AdaptiveStrategy') {
                 params = {
