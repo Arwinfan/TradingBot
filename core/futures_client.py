@@ -226,15 +226,31 @@ class FuturesClient:
 
     def close_position(self, symbol: str, side: str, quantity: float = None) -> Dict:
         """平仓"""
-        # 如果没有指定数量，先获取持仓
-        if quantity is None:
-            positions = self.get_positions()
-            for p in positions:
-                if p['symbol'] == symbol:
-                    quantity = p['size']
-                    break
-            if quantity is None:
-                return {'success': False, 'error': '没有持仓'}
+        from config.settings import Config
+
+        # 重新获取最新持仓信息确保准确
+        positions = self.get_positions()
+        position_found = False
+        for p in positions:
+            if p['symbol'] == symbol:
+                quantity = p['size']
+                position_found = True
+                break
+
+        if not position_found:
+            return {'success': False, 'error': '没有持仓'}
+
+        if quantity is None or quantity <= 0:
+            return {'success': False, 'error': '持仓数量无效'}
+
+        # 根据交易对精度调整数量
+        precision = Config.QUANTITY_PRECISION.get(symbol, 3)
+        quantity = float(round(quantity, precision))
+
+        # 确保数量不少于最小值
+        min_qty = Config.MIN_QUANTITY.get(symbol, 0.001)
+        if quantity < min_qty:
+            quantity = min_qty
 
         # 平多仓：卖出，平空仓：买入
         if side == 'long':
