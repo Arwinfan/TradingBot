@@ -304,6 +304,8 @@ class FuturesClient:
 
     def limit_buy(self, symbol: str, quantity: float, price: float) -> Dict:
         """限价买入/做多"""
+        # 修正价格和数量精度
+        price, quantity = self._round_order_params(symbol, price, quantity)
         result = self._request('POST', '/fapi/v1/order', signed=True, params={
             'symbol': symbol,
             'side': 'BUY',
@@ -317,6 +319,8 @@ class FuturesClient:
 
     def limit_sell(self, symbol: str, quantity: float, price: float) -> Dict:
         """限价卖出/做空"""
+        # 修正价格和数量精度
+        price, quantity = self._round_order_params(symbol, price, quantity)
         result = self._request('POST', '/fapi/v1/order', signed=True, params={
             'symbol': symbol,
             'side': 'SELL',
@@ -327,6 +331,42 @@ class FuturesClient:
         })
         result['success'] = True
         return result
+
+    def _round_order_params(self, symbol: str, price: float, quantity: float) -> tuple:
+        """根据交易所过滤器修正订单参数精度"""
+        try:
+            # 获取交易所过滤规则（带缓存）
+            if not hasattr(self, '_exchange_filters'):
+                self._exchange_filters = {}
+            
+            if symbol not in self._exchange_filters:
+                info = self.get_exchange_info()
+                for sym in info.get('symbols', []):
+                    if sym.get('symbol') == symbol:
+                        filters = {f['filterType']: f for f in sym.get('filters', [])}
+                        self._exchange_filters[symbol] = filters
+                        break
+            
+            filters = self._exchange_filters.get(symbol, {})
+            
+            # 修正价格精度 (tickSize)
+            if 'PRICE_FILTER' in filters:
+                tick_size = float(filters['PRICE_FILTER']['tickSize'])
+                price = round(round(price / tick_size) * tick_size, 8)
+            
+            # 修正数量精度 (stepSize)
+            if 'LOT_SIZE' in filters:
+                step_size = float(filters['LOT_SIZE']['stepSize'])
+                quantity = round(round(quantity / step_size) * step_size, 8)
+            
+        except Exception as e:
+            # 如果获取过滤器失败，使用配置文件的精度
+            from config.settings import Config
+            precision = Config.get_precision(symbol)
+            price = round(price, precision.get('price', 2))
+            quantity = round(quantity, precision.get('quantity', 4))
+        
+        return price, quantity
 
     def cancel_order(self, symbol: str, order_id: str) -> Dict:
         """取消订单"""

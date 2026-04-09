@@ -12,25 +12,26 @@
 
     <style>
         :root {
-            --bg-primary: #0a0e17;
-            --bg-secondary: #111827;
-            --bg-card: rgba(17, 24, 39, 0.8);
-            --bg-card-hover: rgba(17, 24, 39, 0.95);
-            --bg-glass: rgba(255, 255, 255, 0.03);
-            --text-primary: #f9fafb;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            --border-color: rgba(255, 255, 255, 0.08);
+            --bg-primary: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 30%, #e8f5e9 70%, #c8e6c9 100%);
+            --bg-secondary: rgba(255, 255, 255, 0.7);
+            --bg-card: rgba(255, 255, 255, 0.6);
+            --bg-card-hover: rgba(255, 255, 255, 0.85);
+            --bg-glass: rgba(255, 255, 255, 0.4);
+            --text-primary: #1a4a4a;
+            --text-secondary: #4a7c7c;
+            --text-muted: #6b9999;
+            --border-color: rgba(0, 150, 150, 0.15);
 
-            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            --gradient-danger: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            --gradient-primary: linear-gradient(135deg, #00bcd4 0%, #009688 100%);
+            --gradient-teal: linear-gradient(135deg, #80cbc4 0%, #4db6ac 100%);
+            --gradient-success: linear-gradient(135deg, #26a69a 0%, #4db6ac 100%);
+            --gradient-danger: linear-gradient(135deg, #ef5350 0%, #e57373 100%);
 
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
-            --accent-blue: #3b82f6;
-            --accent-yellow: #f59e0b;
-            --accent-purple: #8b5cf6;
+            --accent-green: #00897b;
+            --accent-red: #e53935;
+            --accent-blue: #00acc1;
+            --accent-yellow: #ffb300;
+            --accent-purple: #7e57c2;
 
             --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
@@ -58,8 +59,8 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background:
-                radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+                radial-gradient(ellipse at 20% 20%, rgba(0, 188, 212, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(0, 150, 136, 0.15) 0%, transparent 50%);
             pointer-events: none;
             z-index: -1;
         }
@@ -70,8 +71,9 @@
             top: 0; left: 0;
             width: 260px;
             height: 100vh;
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border-right: 1px solid var(--border-color);
             padding: 24px 16px;
             z-index: 100;
@@ -102,7 +104,7 @@
         .sidebar-logo h5 {
             font-weight: 700;
             font-size: 16px;
-            background: var(--gradient-primary);
+            background: var(--gradient-teal);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -207,15 +209,27 @@
 
         /* 卡片 */
         .glass-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(0, 180, 170, 0.15);
+            border-radius: var(--radius-lg);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 150, 150, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             transition: all 0.3s ease;
         }
 
         .glass-card:hover {
-            background: var(--bg-card-hover);
+            background: rgba(255, 255, 255, 0.75);
+            border-color: rgba(0, 180, 170, 0.25);
         }
 
         /* 交易面板 */
@@ -305,9 +319,9 @@
         }
 
         .form-control:focus, .form-select:focus {
-            background: var(--bg-secondary);
-            border-color: var(--accent-blue);
-            box-shadow: var(--shadow-glow-blue);
+            background: rgba(255, 255, 255, 0.9);
+            border-color: var(--accent-teal);
+            box-shadow: 0 0 0 3px rgba(0, 172, 193, 0.15);
             color: var(--text-primary);
         }
 
@@ -464,7 +478,7 @@
             min-width: 280px;
             padding: 14px 20px;
             border-radius: var(--radius-md);
-            background: var(--bg-card);
+            background: rgba(255, 255, 255, 0.75);
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-lg);
             display: flex;
@@ -873,7 +887,7 @@
             padding: 10px 16px;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-sm);
-            background: var(--bg-card);
+            background: rgba(255, 255, 255, 0.75);
             color: var(--text-primary);
             font-size: 13px;
             font-weight: 500;
@@ -1977,7 +1991,7 @@
                 z-index: 200;
                 width: 44px;
                 height: 44px;
-                background: var(--bg-card);
+                background: rgba(255, 255, 255, 0.75);
                 border: 1px solid var(--border-color);
                 border-radius: var(--radius-md);
                 align-items: center;

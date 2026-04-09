@@ -130,10 +130,14 @@ class AdaptiveStrategy(BaseStrategy):
         state_data = self._data.get_strategy_state('AdaptiveStrategy')
         if state_data and state_data.get('params'):
             params = state_data['params']
-            # 不再从状态恢复symbol，始终使用params中的值
+            # 保存初始symbol（不从状态恢复）
+            initial_symbol = self.params.get('symbol')
+            
+            # 从状态恢复除symbol外的其他参数
             self.trades_today = params.get('trades_today', 0)
             if params.get('last_trade_time'):
                 self.last_trade_time = datetime.fromisoformat(params['last_trade_time'])
+            
             # 恢复挂单状态
             if params.get('pending_order'):
                 p = params['pending_order']
@@ -145,6 +149,13 @@ class AdaptiveStrategy(BaseStrategy):
                     created_time=datetime.fromisoformat(p['created_time']) if p.get('created_time') else datetime.now(),
                     signal_reason=p.get('signal_reason', ''),
                 )
+            
+            # 恢复symbol（如果状态中有的话）
+            if params.get('symbol') and initial_symbol != params.get('symbol'):
+                logger.info(f"{self.name}: 检测到交易对变更 {params.get('symbol')} -> {initial_symbol}，重置持仓状态")
+                self.current_position = None
+                self.pending_order = None
+        
 
     def _save_state(self):
         """保存状态"""
