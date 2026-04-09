@@ -29,12 +29,12 @@ ADAPTIVE_STRATEGY = {
         'position_value': 20,             # 单次开仓本金 (USDT)
         'stop_loss_pct': 0.50,            # 止损50%本金
         'kline_interval': '5m',          # K线周期
-        'adx_threshold': 25,              # ADX阈值
+        'adx_threshold': 18,              # ADX阈值 (降低让更多市场被识别为趋势)
         'ema_fast': 9,                    # 快速EMA
         'ema_slow': 21,                   # 慢速EMA
         'rsi_period': 14,                 # RSI周期
-        'rsi_overbought': 70,             # RSI超买
-        'rsi_oversold': 30,              # RSI超卖
+        'rsi_overbought': 65,             # RSI超买 (降低，更快触发做空)
+        'rsi_oversold': 35,              # RSI超卖 (提高，更快触发做多)
         'bollinger_period': 20,           # 布林带周期
         'bollinger_std': 2,               # 布林带标准差倍数
         'take_profit_1': 2.0,             # 第一止盈(USDT)
