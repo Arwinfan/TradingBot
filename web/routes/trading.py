@@ -368,18 +368,28 @@ def get_strategy(name):
 def get_strategy_logs(name):
     """获取策略运行日志"""
     from core.data_service import get_data_service
+    from strategies import get_strategy_manager
 
     data = get_data_service()
+    manager = get_strategy_manager()
 
-    # 获取策略交易记录
+    # 获取策略实例的当前交易对
+    strategy = manager.get_strategy(name)
+    symbol = None
+    if strategy:
+        symbol = strategy.symbol
+
+    # 获取策略交易记录 - 按策略名和当前交易对过滤
     limit = request.args.get('limit', 50, type=int)
-    trades = data.get_trades(strategy=name, limit=limit)
+    if symbol:
+        trades = data.get_trades(strategy=name, symbol=symbol, limit=limit)
+        summary = data.get_trade_summary(strategy=name, symbol=symbol)
+    else:
+        trades = data.get_trades(strategy=name, limit=limit)
+        summary = data.get_trade_summary(strategy=name)
 
     # 获取策略状态
     state = data.get_strategy_state(name)
-
-    # 获取交易汇总
-    summary = data.get_trade_summary(strategy=name)
 
     return jsonify({
         'success': True,
