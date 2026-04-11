@@ -551,14 +551,16 @@
 
         .funding-rate-card {
             padding: 16px;
+            display: flex;
+            flex-direction: column;
         }
 
         .funding-rate-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -587,8 +589,15 @@
             color: var(--text-muted);
         }
 
+        .funding-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         .funding-list {
-            max-height: 300px;
+            max-height: 200px;
             overflow-y: auto;
         }
 
@@ -601,34 +610,55 @@
             border-radius: 2px;
         }
 
-        .funding-item {
+        .funding-section-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
         }
 
-        .funding-item:last-child {
-            border-bottom: none;
+        .funding-section-header.positive {
+            background: rgba(229, 57, 53, 0.15);
+            color: #ef5350;
         }
 
-        .funding-symbol {
-            display: flex;
-            align-items: center;
+        .funding-section-header.negative {
+            background: rgba(0, 137, 123, 0.15);
+            color: #4db6ac;
+        }
+
+        .funding-section-header span:last-child {
+            opacity: 0.7;
+            font-size: 10px;
+        }
+
+        .funding-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
             gap: 8px;
+            padding: 6px 8px;
+            border-radius: 4px;
+            align-items: center;
+        }
+
+        .funding-row:nth-child(odd) {
+            background: rgba(255, 255, 255, 0.03);
         }
 
         .funding-symbol-name {
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .funding-rate-value {
             font-weight: 700;
-            padding: 3px 8px;
+            padding: 2px 6px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 11px;
+            white-space: nowrap;
         }
 
         .funding-rate-value.positive {
@@ -641,16 +671,11 @@
             color: #4db6ac;
         }
 
-        .funding-section-title {
-            font-size: 12px;
+        .funding-empty {
+            text-align: center;
             color: var(--text-muted);
-            margin: 12px 0 8px;
-            padding-bottom: 4px;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-        }
-
-        .funding-section-title:first-child {
-            margin-top: 0;
+            font-size: 12px;
+            padding: 20px;
         }
 
         /* 账户卡片 */
@@ -1088,6 +1113,40 @@
 
             .strategy-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .funding-rate-container {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .funding-rate-card {
+                padding: 14px;
+            }
+
+            .danmu-container {
+                height: 50px;
+            }
+
+            .danmu-row {
+                font-size: 12px;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .funding-rate-value {
+                font-size: 10px;
+                padding: 2px 4px;
+            }
+
+            .funding-symbol-name {
+                font-size: 11px;
+            }
+
+            .funding-section-header {
+                padding: 4px 6px;
+                font-size: 10px;
             }
         }
 
@@ -1884,46 +1943,51 @@
         function renderFundingList(containerId, items) {
             const container = document.getElementById(containerId);
             if (!items || items.length === 0) {
-                container.innerHTML = '<div class="text-center text-muted p-3">暂无数据</div>';
+                container.innerHTML = '<div class="funding-empty">暂无数据</div>';
                 return;
             }
 
-            // 按资金费率排序
-            const sorted = [...items].sort((a, b) => Math.abs(b.rate) - Math.abs(a.rate));
-            const top10 = sorted.slice(0, 10);
-
             // 分为正费和负费
-            const positive = top10.filter(item => item.rate >= 0);
-            const negative = top10.filter(item => item.rate < 0);
+            const positive = items.filter(item => item.rate > 0).sort((a, b) => b.rate - a.rate).slice(0, 10);
+            const negative = items.filter(item => item.rate < 0).sort((a, b) => a.rate - b.rate).slice(0, 10);
 
-            let html = '';
+            let html = '<div class="funding-content">';
 
+            // 正费率前10
             if (positive.length > 0) {
-                html += '<div class="funding-section-title">资金费率正</div>';
+                html += '<div class="funding-section-header positive"><span>资金费率正</span><span>Taker付费</span></div>';
+                html += '<div class="funding-list">';
                 positive.forEach(item => {
                     html += renderFundingItem(item);
                 });
+                html += '</div>';
             }
 
+            // 负费率前10
             if (negative.length > 0) {
-                html += '<div class="funding-section-title">资金费率负</div>';
+                html += '<div class="funding-section-header negative"><span>资金费率负</span><span>Maker收益</span></div>';
+                html += '<div class="funding-list">';
                 negative.forEach(item => {
                     html += renderFundingItem(item);
                 });
+                html += '</div>';
             }
 
+            if (positive.length === 0 && negative.length === 0) {
+                html += '<div class="funding-empty">暂无数据</div>';
+            }
+
+            html += '</div>';
             container.innerHTML = html;
         }
 
         function renderFundingItem(item) {
             const rateClass = item.rate >= 0 ? 'positive' : 'negative';
             const rateSign = item.rate >= 0 ? '+' : '';
-            const symbolName = item.symbol.replace(/(-|USDT|perpetual)/gi, '');
+            const symbolName = item.symbol.replace(/(-|USDT|perpetual|_usdt)/gi, '').toUpperCase();
 
-            return `<div class="funding-item">
-                <div class="funding-symbol">
-                    <span class="funding-symbol-name">${symbolName}</span>
-                </div>
+            return `<div class="funding-row">
+                <span class="funding-symbol-name">${symbolName}</span>
                 <span class="funding-rate-value ${rateClass}">${rateSign}${(item.rate * 100).toFixed(4)}%</span>
             </div>`;
         }
