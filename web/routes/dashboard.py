@@ -225,3 +225,81 @@ def get_logs():
         'success': True,
         'logs': logs,
     })
+
+
+@dashboard_bp.route('/api/funding-rates')
+def get_funding_rates():
+    """获取各平台资金费率"""
+    import requests
+    from config.settings import Config
+
+    result = {
+        'binance': [],
+        'okx': [],
+        'gate': []
+    }
+
+    proxies = {}
+    if Config.HTTP_PROXY:
+        proxies = {
+            'http': Config.HTTP_PROXY,
+            'https': Config.HTTP_PROXY,
+        }
+
+    # 币安期货资金费率
+    try:
+        response = requests.get(
+            'https://fapi.binance.com/fapi/v1/premiumIndex',
+            proxies=proxies,
+            timeout=10
+        )
+        data = response.json()
+        for item in data:
+            result['binance'].append({
+                'symbol': item.get('symbol', ''),
+                'rate': float(item.get('lastFundingRate', 0))
+            })
+    except Exception as e:
+        logger.error(f"获取币安资金费率失败: {e}")
+
+    # OKX资金费率
+    try:
+        response = requests.get(
+            'https://www.okx.com/api/v5/market/tickers?instType=SWAP',
+            proxies=proxies,
+            timeout=10
+        )
+        data = response.json()
+        if data.get('data'):
+            for item in data['data']:
+                inst_id = item.get('instId', '')
+                if 'USDT' in inst_id or 'USDM' in inst_id:
+                    result['okx'].append({
+                        'symbol': inst_id.replace('-USDT-SWAP', '').replace('-USDM-SWAP', ''),
+                        'rate': float(item.get('fundingRate', 0))
+                    })
+    except Exception as e:
+        logger.error(f"获取OKX资金费率失败: {e}")
+
+    # Gate.io资金费率
+    try:
+        response = requests.get(
+            'https://api.gateio.ws/api/v4/futures/usdt/contracts',
+            proxies=proxies,
+            timeout=10
+        )
+        data = response.json()
+        for item in data:
+            result['gate'].append({
+                'symbol': item.get('name', ''),
+                'rate': float(item.get('funding_rate', 0))
+            })
+    except Exception as e:
+        logger.error(f"获取Gate资金费率失败: {e}")
+
+    return jsonify({
+        'success': True,
+        'binance': result['binance'],
+        'okx': result['okx'],
+        'gate': result['gate'],
+    })

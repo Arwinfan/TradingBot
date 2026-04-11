@@ -458,6 +458,201 @@
             color: var(--text-muted);
         }
 
+        /* 弹幕行情样式 */
+        .danmu-container {
+            position: relative;
+            height: 60px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .danmu-track {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .danmu-row {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            gap: 30px;
+            animation: danmu-scroll 40s linear infinite;
+        }
+
+        .danmu-row:nth-child(1) { top: 0; animation-duration: 35s; }
+        .danmu-row:nth-child(2) { top: 30px; animation-duration: 45s; animation-delay: -10s; }
+
+        @keyframes danmu-scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .danmu-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            margin-right: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .danmu-item:hover {
+            background: rgba(0, 199, 190, 0.3);
+            transform: scale(1.05);
+        }
+
+        .danmu-symbol {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .danmu-price {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .danmu-change {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .danmu-change.up {
+            background: rgba(0, 137, 123, 0.6);
+            color: #4db6ac;
+        }
+
+        .danmu-change.down {
+            background: rgba(229, 57, 53, 0.6);
+            color: #ef5350;
+        }
+
+        /* 资金费率排行榜 */
+        .funding-rate-section {
+            margin-bottom: 24px;
+        }
+
+        .funding-rate-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .funding-rate-card {
+            padding: 16px;
+        }
+
+        .funding-rate-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .funding-rate-exchange {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .funding-rate-exchange.binance { background: linear-gradient(135deg, #f3ba2f, #f5d67b); color: #000; }
+        .funding-rate-exchange.okx { background: linear-gradient(135deg, #1a1a1a, #4a4a4a); color: #fff; }
+        .funding-rate-exchange.gate { background: linear-gradient(135deg, #1fbff8, #0d8ecf); color: #fff; }
+
+        .funding-rate-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .funding-rate-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .funding-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .funding-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .funding-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        .funding-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .funding-item:last-child {
+            border-bottom: none;
+        }
+
+        .funding-symbol {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .funding-symbol-name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .funding-rate-value {
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .funding-rate-value.positive {
+            background: rgba(229, 57, 53, 0.2);
+            color: #ef5350;
+        }
+
+        .funding-rate-value.negative {
+            background: rgba(0, 137, 123, 0.2);
+            color: #4db6ac;
+        }
+
+        .funding-section-title {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 12px 0 8px;
+            padding-bottom: 4px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .funding-section-title:first-child {
+            margin-top: 0;
+        }
+
         /* 账户卡片 */
         .account-card {
             padding: 24px;
@@ -1304,6 +1499,58 @@
             </div>
         </div>
 
+        <!-- 弹幕行情 -->
+        <div class="danmu-container">
+            <div class="danmu-track">
+                <div class="danmu-row" id="danmu-row-1"></div>
+                <div class="danmu-row" id="danmu-row-2"></div>
+            </div>
+        </div>
+
+        <!-- 资金费率排行榜 -->
+        <div class="funding-rate-section">
+            <div class="funding-rate-container">
+                <div class="glass-card funding-rate-card">
+                    <div class="funding-rate-header">
+                        <div class="funding-rate-exchange binance">B</div>
+                        <div>
+                            <div class="funding-rate-title">币安 Binance</div>
+                            <div class="funding-rate-subtitle">永续合约资金费率</div>
+                        </div>
+                    </div>
+                    <div class="funding-list" id="funding-binance">
+                        <div class="text-center text-muted p-3">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="glass-card funding-rate-card">
+                    <div class="funding-rate-header">
+                        <div class="funding-rate-exchange okx">O</div>
+                        <div>
+                            <div class="funding-rate-title">OKX</div>
+                            <div class="funding-rate-subtitle">永续合约资金费率</div>
+                        </div>
+                    </div>
+                    <div class="funding-list" id="funding-okx">
+                        <div class="text-center text-muted p-3">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="glass-card funding-rate-card">
+                    <div class="funding-rate-header">
+                        <div class="funding-rate-exchange gate">G</div>
+                        <div>
+                            <div class="funding-rate-title">Gate.io</div>
+                            <div class="funding-rate-subtitle">永续合约资金费率</div>
+                        </div>
+                    </div>
+                    <div class="funding-list" id="funding-gate">
+                        <div class="text-center text-muted p-3">加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 行情卡片 -->
         <div class="ticker-grid">
             <div class="glass-card ticker-card btc animate-in delay-1" onclick="selectSymbol('BTCUSDT')">
@@ -1517,12 +1764,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadDashboardData();
             loadChart(currentSymbol, currentTimeframe);
+            loadFundingRates();
 
             // 每30秒刷新数据
             refreshInterval = setInterval(loadDashboardData, 30000);
 
             // 每60秒刷新K线
             setInterval(() => loadChart(currentSymbol, currentTimeframe), 60000);
+
+            // 每60秒刷新资金费率
+            setInterval(loadFundingRates, 60000);
         });
 
         async function loadDashboardData() {
@@ -1541,6 +1792,7 @@
                     updatePositions(data.positions);
                     updateStrategies(data.strategies);
                     updateSystemStatus(data);
+                    updateDanmu(data.tickers);
                 }
             } catch (error) {
                 console.error('加载数据失败:', error);
@@ -1577,6 +1829,103 @@
                     document.getElementById(`${key}-volume`).textContent = formatVolume(volume);
                 }
             });
+        }
+
+        function updateDanmu(tickers) {
+            const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'DOTUSDT'];
+            let row1 = '';
+            let row2 = '';
+
+            symbols.forEach((symbol, index) => {
+                const ticker = tickers[symbol];
+                if (ticker) {
+                    const price = ticker.last || 0;
+                    const change = ticker.change_percent || 0;
+                    const changeClass = change >= 0 ? 'up' : 'down';
+                    const changeSign = change >= 0 ? '+' : '';
+
+                    const item = `<div class="danmu-item" onclick="selectSymbol('${symbol}')">
+                        <span class="danmu-symbol">${symbol.replace('USDT', '')}</span>
+                        <span class="danmu-price">${formatPrice(price)}</span>
+                        <span class="danmu-change ${changeClass}">${changeSign}${change.toFixed(2)}%</span>
+                    </div>`;
+
+                    if (index % 2 === 0) {
+                        row1 += item;
+                    } else {
+                        row2 += item;
+                    }
+                }
+            });
+
+            // 复制内容实现无缝滚动
+            document.getElementById('danmu-row-1').innerHTML = row1 + row1;
+            document.getElementById('danmu-row-2').innerHTML = row2 + row2;
+        }
+
+        async function loadFundingRates() {
+            try {
+                const response = await fetch('/api/funding-rates');
+                const data = await response.json();
+
+                if (data.success) {
+                    renderFundingList('funding-binance', data.binance);
+                    renderFundingList('funding-okx', data.okx);
+                    renderFundingList('funding-gate', data.gate);
+                }
+            } catch (error) {
+                console.error('加载资金费率失败:', error);
+                document.getElementById('funding-binance').innerHTML = '<div class="text-center text-muted p-3">加载失败</div>';
+                document.getElementById('funding-okx').innerHTML = '<div class="text-center text-muted p-3">加载失败</div>';
+                document.getElementById('funding-gate').innerHTML = '<div class="text-center text-muted p-3">加载失败</div>';
+            }
+        }
+
+        function renderFundingList(containerId, items) {
+            const container = document.getElementById(containerId);
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted p-3">暂无数据</div>';
+                return;
+            }
+
+            // 按资金费率排序
+            const sorted = [...items].sort((a, b) => Math.abs(b.rate) - Math.abs(a.rate));
+            const top10 = sorted.slice(0, 10);
+
+            // 分为正费和负费
+            const positive = top10.filter(item => item.rate >= 0);
+            const negative = top10.filter(item => item.rate < 0);
+
+            let html = '';
+
+            if (positive.length > 0) {
+                html += '<div class="funding-section-title">资金费率正</div>';
+                positive.forEach(item => {
+                    html += renderFundingItem(item);
+                });
+            }
+
+            if (negative.length > 0) {
+                html += '<div class="funding-section-title">资金费率负</div>';
+                negative.forEach(item => {
+                    html += renderFundingItem(item);
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderFundingItem(item) {
+            const rateClass = item.rate >= 0 ? 'positive' : 'negative';
+            const rateSign = item.rate >= 0 ? '+' : '';
+            const symbolName = item.symbol.replace(/(-|USDT|perpetual)/gi, '');
+
+            return `<div class="funding-item">
+                <div class="funding-symbol">
+                    <span class="funding-symbol-name">${symbolName}</span>
+                </div>
+                <span class="funding-rate-value ${rateClass}">${rateSign}${(item.rate * 100).toFixed(4)}%</span>
+            </div>`;
         }
 
         function updateBalance(balance) {
