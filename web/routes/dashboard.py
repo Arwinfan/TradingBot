@@ -262,22 +262,40 @@ def get_funding_rates():
     except Exception as e:
         logger.error(f"获取币安资金费率失败: {e}")
 
-    # OKX资金费率
+    # OKX资金费率 - 先获取交易对列表，再获取资金费率
     try:
+        # 先获取所有SWAP交易对
         response = requests.get(
             'https://www.okx.com/api/v5/market/tickers?instType=SWAP',
             proxies=proxies,
-            timeout=10
+            timeout=15
         )
         data = response.json()
         if data.get('data'):
-            for item in data['data']:
+            # 获取前50个交易对的资金费率（避免请求太多）
+            symbols = []
+            for item in data['data'][:50]:
                 inst_id = item.get('instId', '')
-                if 'USDT' in inst_id or 'USDM' in inst_id:
-                    result['okx'].append({
-                        'symbol': inst_id.replace('-USDT-SWAP', '').replace('-USDM-SWAP', ''),
-                        'rate': float(item.get('fundingRate', 0))
-                    })
+                if 'USDT' in inst_id:
+                    symbols.append(inst_id)
+
+            # 批量获取资金费率
+            for symbol in symbols:
+                try:
+                    rate_response = requests.get(
+                        f'https://www.okx.com/api/v5/public/funding-rate?instId={symbol}',
+                        proxies=proxies,
+                        timeout=5
+                    )
+                    rate_data = rate_response.json()
+                    if rate_data.get('data'):
+                        funding_rate = float(rate_data['data'][0].get('fundingRate', 0))
+                        result['okx'].append({
+                            'symbol': symbol.replace('-USDT-SWAP', ''),
+                            'rate': funding_rate
+                        })
+                except:
+                    pass
     except Exception as e:
         logger.error(f"获取OKX资金费率失败: {e}")
 
