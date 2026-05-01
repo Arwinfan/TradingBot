@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信号与警报 - TradingBot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 30%, #e8f5e9 70%, #c8e6c9 100%);
+            --bg-card: rgba(255, 255, 255, 0.6);
+            --bg-glass: rgba(255, 255, 255, 0.4);
+            --text-primary: #1a4a4a;
+            --text-secondary: #4a7c7c;
+            --text-muted: #6b9999;
+            --border-color: rgba(0, 150, 150, 0.15);
+            --accent-green: #00897b;
+            --accent-red: #e53935;
+            --accent-blue: #00acc1;
+            --accent-yellow: #ffb300;
+            --accent-orange: #f97316;
+            --shadow-sm: 0 2px 8px rgba(0, 150, 150, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 150, 150, 0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            padding: 24px 16px;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 8px 24px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #00bcd4 0%, #009688 100%);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .sidebar-logo h5 {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent-green);
+        }
+
+        .sidebar-logo span {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .nav-item {
+            margin-bottom: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--bg-glass);
+            color: var(--accent-green);
+        }
+
+        .nav-link i {
+            font-size: 20px;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header-custom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .stat-value.danger { color: var(--accent-red); }
+        .stat-value.warning { color: var(--accent-orange); }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        /* 标签页 */
+        .nav-tabs-custom {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background: var(--accent-green);
+            color: white;
+            border-color: var(--accent-green);
+        }
+
+        /* 信号卡片 */
+        .signal-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .signal-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: all 0.2s;
+        }
+
+        .signal-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .signal-card.buy {
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .signal-card.sell {
+            border-left: 4px solid var(--accent-red);
+        }
+
+        .signal-info {
+            flex: 1;
+        }
+
+        .signal-symbol {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .signal-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .signal-badge.buy {
+            background: rgba(0, 137, 123, 0.15);
+            color: var(--accent-green);
+        }
+
+        .signal-badge.sell {
+            background: rgba(229, 57, 53, 0.15);
+            color: var(--accent-red);
+        }
+
+        .signal-type {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .signal-prices {
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+        }
+
+        .signal-price-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .signal-price-label {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .signal-price-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .signal-confidence {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .confidence-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .confidence-value.high { color: var(--accent-green); }
+        .confidence-value.medium { color: var(--accent-yellow); }
+        .confidence-value.low { color: var(--accent-orange); }
+
+        .confidence-label {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* 警报列表 */
+        .alert-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .alert-item {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+
+        .alert-item:hover {
+            transform: translateX(4px);
+        }
+
+        .alert-item.critical {
+            border-left: 4px solid var(--accent-red);
+        }
+
+        .alert-item.warning {
+            border-left: 4px solid var(--accent-orange);
+        }
+
+        .alert-item.info {
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .alert-item.acknowledged {
+            opacity: 0.6;
+        }
+
+        .alert-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .alert-icon.critical { background: rgba(229, 57, 53, 0.15); color: var(--accent-red); }
+        .alert-icon.warning { background: rgba(249, 115, 22, 0.15); color: var(--accent-orange); }
+        .alert-icon.info { background: rgba(0, 172, 193, 0.15); color: var(--accent-blue); }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .alert-message {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .alert-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm-custom {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-sm-custom:hover {
+            background: var(--accent-green);
+            color: white;
+            border-color: var(--accent-green);
+        }
+
+        .btn-primary-custom {
+            padding: 10px 24px;
+            border-radius: var(--radius-md);
+            border: none;
+            background: linear-gradient(135deg, #00bcd4 0%, #009688 100%);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary-custom:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* 扫描进度 */
+        .scan-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(0, 172, 193, 0.1);
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+        }
+
+        .scan-status i {
+            color: var(--accent-blue);
+        }
+
+        .scan-status-text {
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .last-scan {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* 过滤器 */
+        .filter-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .filter-chip:hover, .filter-chip.active {
+            background: var(--accent-green);
+            color: white;
+            border-color: var(--accent-green);
+        }
+
+        /* 配置卡片 */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .config-item:last-child {
+            border-bottom: none;
+        }
+
+        .config-label {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .config-value {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        /* 开关 */
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #ccc;
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        input:checked + .toggle-slider {
+            background: var(--accent-green);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin-bottom: 8px;
+            box-shadow: var(--shadow-md);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ==================== 移动端适配 ==================== */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                flex-direction: row;
+                padding: 12px;
+                overflow-x: auto;
+            }
+
+            .sidebar-logo {
+                padding: 0 16px 0 0;
+                border-bottom: none;
+                margin-bottom: 0;
+            }
+
+            .sidebar-nav {
+                flex-direction: row;
+                display: flex;
+                gap: 8px;
+            }
+
+            .nav-link {
+                padding: 8px 12px;
+                white-space: nowrap;
+            }
+
+            .nav-link span {
+                display: none;
+            }
+
+            .nav-link i {
+                font-size: 18px;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+
+            .page-title {
+                font-size: 22px;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .stat-card {
+                padding: 16px 12px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .alert-stats-row {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .alert-stat {
+                flex: 1 1 45%;
+                min-width: 80px;
+            }
+
+            .signal-card {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .signal-confidence {
+                align-self: flex-start;
+            }
+
+            .signal-prices {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .alert-item {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .alert-icon {
+                align-self: flex-start;
+            }
+
+            .alert-actions {
+                align-self: flex-end;
+            }
+
+            .filter-row {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 8px;
+            }
+
+            .filter-chip {
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scan-status {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .nav-tabs-custom {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 8px;
+            }
+
+            .tab-btn {
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+        }
+
+        /* 小屏幕手机 */
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .stat-label {
+                font-size: 10px;
+            }
+
+            .alert-stat-value {
+                font-size: 22px;
+            }
+
+            .btn-sm-custom {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">📊</div>
+            <div>
+                <h5>TradingBot</h5>
+                <span>量化交易系统</span>
+            </div>
+        </div>
+
+        <nav class="nav flex-column sidebar-nav">
+            <div class="nav-item">
+                <a href="/" class="nav-link">
+                    <i class="bi bi-grid"></i>
+                    <span>仪表盘</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/trading" class="nav-link">
+                    <i class="bi bi-graph-up"></i>
+                    <span>交易</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/settings" class="nav-link">
+                    <i class="bi bi-gear"></i>
+                    <span>设置</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/signals" class="nav-link active">
+                    <i class="bi bi-bell"></i>
+                    <span>信号与警报</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">📡 信号与警报</h1>
+            <p class="page-subtitle">技术信号扫描和市场警报监控</p>
+        </div>
+
+        <!-- 扫描状态 -->
+        <div class="scan-status" id="scanStatus">
+            <i class="bi bi-radar"></i>
+            <div class="scan-status-text">
+                <strong>自动扫描运行中</strong>
+                <div class="last-scan" id="lastScanTime">每 5 分钟扫描一次</div>
+            </div>
+            <button class="btn-sm-custom" onclick="triggerScan()">
+                <i class="bi bi-arrow-clockwise"></i> 立即扫描
+            </button>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value" id="signalCount">0</div>
+                <div class="stat-label">活跃信号</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="alertCount">0</div>
+                <div class="stat-label">总警报</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value warning" id="unackCount">0</div>
+                <div class="stat-label">未读警报</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value danger" id="criticalCount">0</div>
+                <div class="stat-label">严重警报</div>
+            </div>
+        </div>
+
+        <!-- 标签页 -->
+        <div class="nav-tabs-custom">
+            <button class="tab-btn active" data-tab="signals" onclick="switchTab('signals')">
+                <i class="bi bi-lightning"></i> 交易信号
+            </button>
+            <button class="tab-btn" data-tab="alerts" onclick="switchTab('alerts')">
+                <i class="bi bi-exclamation-triangle"></i> 警报中心
+            </button>
+            <button class="tab-btn" data-tab="config" onclick="switchTab('config')">
+                <i class="bi bi-sliders"></i> 配置
+            </button>
+        </div>
+
+        <!-- 信号列表 -->
+        <div id="signalsTab">
+            <div class="card">
+                <div class="card-header-custom">
+                    <h3 class="card-title">📈 技术信号</h3>
+                    <span style="font-size: 13px; color: var(--text-muted);">
+                        基于 MACD / RSI / 布林带分析
+                    </span>
+                </div>
+                <div class="signal-list" id="signalList">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 警报列表 -->
+        <div id="alertsTab" style="display: none;">
+            <div class="filter-row">
+                <button class="filter-chip active" data-filter="all" onclick="filterAlerts('all')">全部</button>
+                <button class="filter-chip" data-filter="unread" onclick="filterAlerts('unread')">未读</button>
+                <button class="filter-chip" data-filter="critical" onclick="filterAlerts('critical')">严重</button>
+                <button class="filter-chip" data-filter="warning" onclick="filterAlerts('warning')">警告</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header-custom">
+                    <h3 class="card-title">🔔 警报列表</h3>
+                    <button class="btn-sm-custom" onclick="acknowledgeAll()">
+                        <i class="bi bi-check-all"></i> 全部已读
+                    </button>
+                </div>
+                <div class="alert-list" id="alertList">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 配置 -->
+        <div id="configTab" style="display: none;">
+            <div class="config-grid">
+                <div class="card">
+                    <div class="card-header-custom">
+                        <h3 class="card-title">🔍 信号扫描配置</h3>
+                    </div>
+                    <div id="scannerConfig"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header-custom">
+                        <h3 class="card-title">🔔 警报配置</h3>
+                    </div>
+                    <div id="alertConfig"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'signals';
+        let currentFilter = 'all';
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            setInterval(loadData, 30000); // 每30秒刷新
+        });
+
+        async function loadData() {
+            await Promise.all([
+                loadSignals(),
+                loadAlerts(),
+                loadConfig()
+            ]);
+            updateStats();
+        }
+
+        async function loadSignals() {
+            try {
+                const resp = await fetch('/api/signals');
+                const data = await resp.json();
+                
+                const container = document.getElementById('signalList');
+                
+                if (!data.signals || data.signals.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-lightning-charge"></i>
+                            <p>暂无交易信号</p>
+                            <small>扫描间隔 5 分钟，请稍后再试</small>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = data.signals.map(sig => {
+                    const confidenceClass = sig.confidence >= 0.7 ? 'high' : sig.confidence >= 0.5 ? 'medium' : 'low';
+                    const sideClass = sig.side === 'BUY' ? 'buy' : 'sell';
+                    const typeLabels = {
+                        'breakout': '价格突破',
+                        'macd_cross': 'MACD交叉',
+                        'rsi_extreme': 'RSI极值',
+                        'volume_spike': '量能放大',
+                        'custom': '自定义'
+                    };
+
+                    return `
+                        <div class="signal-card ${sideClass}">
+                            <div class="signal-info">
+                                <div class="signal-symbol">${sig.symbol}</div>
+                                <span class="signal-badge ${sideClass}">${sig.side === 'BUY' ? '做多' : '做空'}</span>
+                                <span class="signal-type">${typeLabels[sig.type] || sig.type}</span>
+                                <div class="signal-prices">
+                                    <div class="signal-price-item">
+                                        <span class="signal-price-label">入场</span>
+                                        <span class="signal-price-value">$${sig.entry_price.toLocaleString()}</span>
+                                    </div>
+                                    <div class="signal-price-item">
+                                        <span class="signal-price-label">止损</span>
+                                        <span class="signal-price-value" style="color: var(--accent-red);">
+                                            ${sig.stop_loss ? '$' + sig.stop_loss.toLocaleString() : '未设置'}
+                                        </span>
+                                    </div>
+                                    <div class="signal-price-item">
+                                        <span class="signal-price-label">止盈</span>
+                                        <span class="signal-price-value" style="color: var(--accent-green);">
+                                            ${sig.take_profit ? '$' + sig.take_profit.toLocaleString() : '未设置'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">
+                                    ${sig.reason}
+                                </div>
+                            </div>
+                            <div class="signal-confidence">
+                                <div class="confidence-value ${confidenceClass}">${Math.round(sig.confidence * 100)}%</div>
+                                <div class="confidence-label">置信度</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // 更新时间
+                if (data.last_scan) {
+                    const time = new Date(data.last_scan).toLocaleTimeString();
+                    document.getElementById('lastScanTime').textContent = `上次扫描: ${time}`;
+                }
+
+            } catch (e) {
+                console.error('加载信号失败:', e);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <p>加载信号失败</p>
+                        <small>请检查网络或刷新页面</small>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadAlerts() {
+            try {
+                const unackOnly = currentFilter === 'unread';
+                const resp = await fetch(`/api/alerts?unacknowledged=${unackOnly}`);
+                const data = await resp.json();
+                
+                const container = document.getElementById('alertList');
+                
+                if (!data.alerts || data.alerts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-bell-slash"></i>
+                            <p>暂无警报</p>
+                            <small>系统正常运转中</small>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let alerts = data.alerts;
+                if (currentFilter === 'critical') {
+                    alerts = alerts.filter(a => a.level === 'critical');
+                } else if (currentFilter === 'warning') {
+                    alerts = alerts.filter(a => a.level === 'warning');
+                } else if (currentFilter === 'unread') {
+                    alerts = alerts.filter(a => !a.acknowledged);
+                }
+
+                if (alerts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-check-circle"></i>
+                            <p>没有更多警报</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = alerts.map(alert => {
+                    const time = new Date(alert.timestamp).toLocaleString();
+                    const typeLabels = {
+                        'price_break': '价格',
+                        'risk_limit': '风控',
+                        'pnl_limit': '盈亏',
+                        'system': '系统',
+                        'signal': '信号',
+                        'trading': '交易'
+                    };
+
+                    return `
+                        <div class="alert-item ${alert.level} ${alert.acknowledged ? 'acknowledged' : ''}">
+                            <div class="alert-icon ${alert.level}">
+                                <i class="bi ${alert.level === 'critical' ? 'bi-x-circle' : alert.level === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle'}"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">${alert.title}</div>
+                                <div class="alert-message">${alert.message}</div>
+                                <div class="alert-meta">
+                                    <span><i class="bi bi-tag"></i> ${typeLabels[alert.type] || alert.type}</span>
+                                    ${alert.symbol ? `<span><i class="bi bi-coin"></i> ${alert.symbol}</span>` : ''}
+                                    <span><i class="bi bi-clock"></i> ${time}</span>
+                                </div>
+                            </div>
+                            <div class="alert-actions">
+                                ${!alert.acknowledged ? `
+                                    <button class="btn-sm-custom" onclick="acknowledge('${alert.id}')">
+                                        <i class="bi bi-check"></i> 确认
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (e) {
+                console.error('加载警报失败:', e);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <p>加载警报失败</p>
+                        <small>请检查网络或刷新页面</small>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadConfig() {
+            try {
+                const resp = await fetch('/api/signals/config');
+                const data = await resp.json();
+                
+                if (data.config) {
+                    const scannerHtml = Object.entries({
+                        '启用状态': data.config.enabled ? '已启用' : '已禁用',
+                        '扫描间隔': data.config.interval + ' 秒',
+                        '扫描币种': data.config.symbols?.join(', ') || '全部',
+                        'K线周期': data.config.interval_kline,
+                        '最小置信度': (data.config.min_confidence * 100) + '%',
+                        'MACD信号': data.config.enable_macd ? '启用' : '禁用',
+                        'RSI信号': data.config.enable_rsi ? '启用' : '禁用',
+                        '突破信号': data.config.enable_breakout ? '启用' : '禁用',
+                        'RSI超卖': data.config.rsi_oversold,
+                        'RSI超买': data.config.rsi_overbought
+                    }).map(([k, v]) => `
+                        <div class="config-item">
+                            <span class="config-label">${k}</span>
+                            <span class="config-value">${v}</span>
+                        </div>
+                    `).join('');
+
+                    document.getElementById('scannerConfig').innerHTML = scannerHtml;
+                }
+
+                if (data.alert_config) {
+                    const alertHtml = Object.entries({
+                        '启用状态': data.alert_config.enabled ? '已启用' : '已禁用',
+                        '控制台输出': data.alert_config.console_output ? '是' : '否',
+                        'QQ推送': data.alert_config.qq_enabled ? '已启用' : '已禁用',
+                        '邮件推送': data.alert_config.email_enabled ? '已启用' : '已禁用',
+                        '保留天数': data.alert_config.retention_days + ' 天'
+                    }).map(([k, v]) => `
+                        <div class="config-item">
+                            <span class="config-label">${k}</span>
+                            <span class="config-value">${v}</span>
+                        </div>
+                    `).join('');
+
+                    document.getElementById('alertConfig').innerHTML = alertHtml;
+                }
+
+            } catch (e) {
+                console.error('加载配置失败:', e);
+            }
+        }
+
+        function updateStats() {
+            Promise.all([
+                fetch('/api/signals').then(r => r.json()),
+                fetch('/api/alerts').then(r => r.json())
+            ]).then(([sigData, alertData]) => {
+                document.getElementById('signalCount').textContent = sigData.count || 0;
+                document.getElementById('alertCount').textContent = alertData.count || 0;
+                document.getElementById('unackCount').textContent = alertData.unacknowledged_count || 0;
+                document.getElementById('criticalCount').textContent = alertData.critical_count || 0;
+            }).catch(console.error);
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+            document.getElementById('signalsTab').style.display = tab === 'signals' ? 'block' : 'none';
+            document.getElementById('alertsTab').style.display = tab === 'alerts' ? 'block' : 'none';
+            document.getElementById('configTab').style.display = tab === 'config' ? 'block' : 'none';
+        }
+
+        function filterAlerts(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.filter === filter);
+            });
+            loadAlerts();
+        }
+
+        async function triggerScan() {
+            const btn = document.querySelector('[onclick="triggerScan()"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> 扫描中...';
+
+            showToast('正在扫描市场...', 'info');
+
+            try {
+                const resp = await fetch('/api/signals/scan', { method: 'POST' });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    await loadSignals();
+                    await updateStats();
+                } else {
+                    showToast(data.error || '扫描失败', 'danger');
+                }
+            } catch (e) {
+                showToast('扫描请求失败', 'danger');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> 立即扫描';
+        }
+
+        async function acknowledge(alertId) {
+            try {
+                await fetch(`/api/alerts/${alertId}/acknowledge`, { method: 'POST' });
+                showToast('警报已确认', 'success');
+                await loadAlerts();
+                await updateStats();
+            } catch (e) {
+                showToast('确认失败', 'danger');
+            }
+        }
+
+        async function acknowledgeAll() {
+            try {
+                await fetch('/api/alerts/acknowledge-all', { method: 'POST' });
+                showToast('所有警报已确认', 'success');
+                await loadAlerts();
+                await updateStats();
+            } catch (e) {
+                showToast('确认失败', 'danger');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const colors = {
+                'success': 'var(--accent-green)',
+                'danger': 'var(--accent-red)',
+                'warning': 'var(--accent-orange)',
+                'info': 'var(--accent-blue)'
+            };
+            const icons = {
+                'success': 'bi-check-circle',
+                'danger': 'bi-x-circle',
+                'warning': 'bi-exclamation-triangle',
+                'info': 'bi-info-circle'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i class="bi ${icons[type]}" style="color: ${colors[type]}; font-size: 20px;"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 100);
+        }
+    </script>
+</body>
+</html>

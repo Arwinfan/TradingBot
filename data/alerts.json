@@ -1,0 +1,22 @@
+[
+  {
+    "id": "alert-risk_limit-0a6cfc4c",
+    "type": "risk_limit",
+    "level": "critical",
+    "title": "风险警报",
+    "message": "测试风控警报",
+    "symbol": "ETHUSDT",
+    "timestamp": "2026-04-29T21:28:40.847271",
+    "acknowledged": true
+  },
+  {
+    "id": "alert-system-b4b42695",
+    "type": "system",
+    "level": "info",
+    "title": "系统警报",
+    "message": "测试警报 - 系统正常",
+    "symbol": null,
+    "timestamp": "2026-04-29T21:28:40.845515",
+    "acknowledged": true
+  }
+]

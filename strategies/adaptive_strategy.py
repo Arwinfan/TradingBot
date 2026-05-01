@@ -122,7 +122,7 @@ class AdaptiveStrategy(BaseStrategy):
         self.trades_today = 0
         self.daily_reset_time: datetime = None
 
-        # 加载状态（不覆盖当前symbol）
+        # 加载状态（始终使用代码定义的默认symbol，不从数据库恢复）
         self._load_state()
 
     def _load_state(self):
@@ -137,7 +137,13 @@ class AdaptiveStrategy(BaseStrategy):
             self.trades_today = params.get('trades_today', 0)
             if params.get('last_trade_time'):
                 self.last_trade_time = datetime.fromisoformat(params['last_trade_time'])
-            
+
+            # 恢复symbol（始终使用代码定义的默认值，不从状态恢复）
+            if params.get('symbol') and initial_symbol != params.get('symbol'):
+                logger.info(f"{self.name}: 检测到交易对变更 {params.get('symbol')} -> {initial_symbol}，重置持仓状态")
+                self.current_position = None
+                self.pending_order = None
+
             # 恢复挂单状态
             if params.get('pending_order'):
                 p = params['pending_order']
@@ -149,12 +155,10 @@ class AdaptiveStrategy(BaseStrategy):
                     created_time=datetime.fromisoformat(p['created_time']) if p.get('created_time') else datetime.now(),
                     signal_reason=p.get('signal_reason', ''),
                 )
-            
-            # 恢复symbol（如果状态中有的话）
-            if params.get('symbol') and initial_symbol != params.get('symbol'):
-                logger.info(f"{self.name}: 检测到交易对变更 {params.get('symbol')} -> {initial_symbol}，重置持仓状态")
-                self.current_position = None
-                self.pending_order = None
+
+            # 强制使用代码定义的symbol
+            self.params['symbol'] = initial_symbol
+            self.symbol = initial_symbol
         
 
     def _save_state(self):

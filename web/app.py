@@ -16,6 +16,7 @@ socketio = SocketIO()
 from .routes.dashboard import dashboard_bp
 from .routes.trading import trading_bp
 from .routes.settings import settings_bp
+from .routes.signals import signals_bp
 
 
 def create_app():
@@ -43,6 +44,7 @@ def create_app():
     app.register_blueprint(dashboard_bp, url_prefix='/')
     app.register_blueprint(trading_bp, url_prefix='/')
     app.register_blueprint(settings_bp, url_prefix='/')
+    app.register_blueprint(signals_bp, url_prefix='/')
 
     # WebSocket
     socketio.init_app(app, cors_allowed_origins="*", async_mode='threading')

@@ -99,6 +99,7 @@ class ScalpingStrategy(BaseStrategy):
         self.daily_reset_time: datetime = None
         self.wins_today = 0
         self.losses_today = 0
+        self._just_closed = False  # 防止平仓后同一周期重复生成平仓信号
 
         # 从数据库加载已保存的状态
         self._load_state()
@@ -184,6 +185,9 @@ class ScalpingStrategy(BaseStrategy):
         """
         # 重置每日统计
         self._reset_daily_stats()
+        
+        # 清除平仓标志，允许下一周期重新检测开仓信号
+        self._just_closed = False
 
         ticker = self._market.get_ticker(self.symbol)
         current_price = ticker.get('last', 0)
@@ -292,7 +296,15 @@ class ScalpingStrategy(BaseStrategy):
         return None
 
     def _check_entry_conditions(self, current_price: float) -> Signal:
-        """检查开仓条件"""
+        """检查开仓条件（仅当无持仓时）"""
+        # 如果已有持仓，不生成任何开仓信号（平仓由 _check_close_conditions 统一处理）
+        if self.current_position is not None:
+            return None
+
+        # 如果刚平仓完成，本周期不生成任何信号（防止刚平仓就反向开仓）
+        if self._just_closed:
+            return None
+
         # 检查交易次数限制
         if self.trades_today >= self.max_daily_trades:
             return None
@@ -327,13 +339,12 @@ class ScalpingStrategy(BaseStrategy):
         # 计算MACD
         macd_line, signal_line, histogram = self._calculate_macd(closes)
 
-        # 多指标确认
+        # ========== 做多信号 ==========
         # 买入信号: EMA金叉 + RSI不超买 + (MACD确认)
         ema_cross_up = ema_fast_val > ema_slow_val and closes[-1] > closes[-2]
         price_momentum = closes[-1] > closes[-5]  # 短期上涨趋势
 
         buy_confidence = 0.7
-        sell_confidence = 0.7
 
         if ema_cross_up and price_momentum:
             # RSI过滤
@@ -351,19 +362,22 @@ class ScalpingStrategy(BaseStrategy):
             if buy_confidence >= 0.85:
                 amount = self.position_size / current_price
                 precision = Config.get_precision(self.symbol)
-                amount = round(amount, precision.get('quantity', 4))  # 精度处理
+                amount = round(amount, precision.get('quantity', 4))
                 return Signal(
                     type=SignalType.BUY,
                     symbol=self.symbol,
                     price=current_price,
                     amount=amount,
                     confidence=buy_confidence,
-                    reason=f"买入信号: EMA金叉, RSI={rsi:.1f}, 波动率={volatility:.3%}",
+                    reason=f"做多信号: EMA金叉, RSI={rsi:.1f}, 波动率={volatility:.3%}",
                 )
 
+        # ========== 做空信号 ==========
         # 卖出信号: EMA死叉 + RSI不超卖 + (MACD确认)
         ema_cross_down = ema_fast_val < ema_slow_val and closes[-1] < closes[-2]
         price_down_momentum = closes[-1] < closes[-5]  # 短期下跌趋势
+
+        sell_confidence = 0.7
 
         if ema_cross_down and price_down_momentum:
             # RSI过滤
@@ -381,14 +395,14 @@ class ScalpingStrategy(BaseStrategy):
             if sell_confidence >= 0.85:
                 amount = self.position_size / current_price
                 precision = Config.get_precision(self.symbol)
-                amount = round(amount, precision.get('quantity', 4))  # 精度处理
+                amount = round(amount, precision.get('quantity', 4))
                 return Signal(
                     type=SignalType.SELL,
                     symbol=self.symbol,
                     price=current_price,
                     amount=amount,
                     confidence=sell_confidence,
-                    reason=f"卖出信号: EMA死叉, RSI={rsi:.1f}, 波动率={volatility:.3%}",
+                    reason=f"做空信号: EMA死叉, RSI={rsi:.1f}, 波动率={volatility:.3%}",
                 )
 
         return None
@@ -516,6 +530,7 @@ class ScalpingStrategy(BaseStrategy):
 
         pos = self.current_position
         self.current_position = None
+        self._just_closed = True  # 标记刚平仓，防止同一周期重复生成信号
         self.trades_today += 1
         self.last_trade_time = datetime.now()
         self._save_state()
@@ -529,12 +544,12 @@ class ScalpingStrategy(BaseStrategy):
 
         result = super().execute(signal)
 
-        # 更新仓位记录
+        # 更新仓位记录（基于执行结果判断信号含义）
         if signal.type in [SignalType.BUY, SignalType.SELL]:
-            if result.get('result', {}).get('success'):
-                # 判断是开仓还是平仓
+            exec_success = result.get('result', {}).get('success')
+            if exec_success:
                 if self.current_position is None:
-                    # 开仓
+                    # 无持仓时：BUY=开多，SELL=开空
                     side = 'long' if signal.type == SignalType.BUY else 'short'
                     self.current_position = ScalpPosition(
                         entry_price=signal.price,
@@ -544,9 +559,10 @@ class ScalpingStrategy(BaseStrategy):
                         target_profit=self.profit_target,
                         stop_loss=self.stop_loss_pct,
                     )
+                    self._just_closed = False  # 清除刚平仓标记
                     logger.info(f"{self.name}: 开仓 {side} @ {signal.price}")
                 else:
-                    # 平仓
+                    # 有持仓时：BUY=平空，SELL=平多
                     self._close_position()
 
         return result

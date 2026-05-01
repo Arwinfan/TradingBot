@@ -2507,7 +2507,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let currentSymbol = 'BTCUSDT';
+        let currentSymbol = 'ETHUSDT';
         let currentPrice = 0;
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -3033,7 +3033,7 @@ cooldown_seconds：冷却时间`,
                                     </span>
                                 </div>
                                 <div class="strategy-card-symbol">
-                                    <i class="bi bi-activity"></i> ${strategy.params?.symbol || strategy.symbol || 'BTCUSDT'}
+                                    <i class="bi bi-activity"></i> ${strategy.params?.symbol || strategy.symbol || 'ETHUSDT'}
                                 </div>
                             </div>
                             <div class="strategy-card-expand">
@@ -3457,7 +3457,7 @@ cooldown_seconds：冷却时间`,
 
         // 生成策略参数字段HTML
         function getStrategyParamsHtml(strategyName) {
-            const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT'];
+            const symbols = ['ETHUSDT'];
             const symbolSelectHtml = `<select id="param-symbol-${strategyName}" class="param-select">${symbols.map(s => `<option value="${s}">${s}</option>`).join('')}</select>`;
 
             const params = {
@@ -3924,9 +3924,7 @@ cooldown_seconds：冷却时间`,
                         <div class="param-group">
                             <label class="param-label">交易对</label>
                             <select class="param-input" id="param_symbol">
-                                <option value="BTCUSDT" ${params.symbol === 'BTCUSDT' ? 'selected' : ''}>BTCUSDT</option>
                                 <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
-                                <option value="BNBUSDT" ${params.symbol === 'BNBUSDT' ? 'selected' : ''}>BNBUSDT</option>
                             </select>
                         </div>
                         <div class="param-group">
@@ -3983,9 +3981,7 @@ cooldown_seconds：冷却时间`,
                         <div class="param-group">
                             <label class="param-label">交易对</label>
                             <select class="param-input" id="param_symbol">
-                                <option value="BTCUSDT" ${params.symbol === 'BTCUSDT' ? 'selected' : ''}>BTCUSDT</option>
                                 <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
-                                <option value="BNBUSDT" ${params.symbol === 'BNBUSDT' ? 'selected' : ''}>BNBUSDT</option>
                             </select>
                         </div>
                     </div>
@@ -4008,9 +4004,7 @@ cooldown_seconds：冷却时间`,
                         <div class="param-group">
                             <label class="param-label">交易对</label>
                             <select class="param-input" id="param_symbol">
-                                <option value="BTCUSDT" ${params.symbol === 'BTCUSDT' ? 'selected' : ''}>BTCUSDT</option>
                                 <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
-                                <option value="BNBUSDT" ${params.symbol === 'BNBUSDT' ? 'selected' : ''}>BNBUSDT</option>
                             </select>
                         </div>
                         <div class="param-group">
@@ -4076,9 +4070,7 @@ cooldown_seconds：冷却时间`,
                         <div class="param-group">
                             <label class="param-label">交易对</label>
                             <select class="param-input" id="param_symbol">
-                                <option value="BTCUSDT" ${params.symbol === 'BTCUSDT' ? 'selected' : ''}>BTCUSDT</option>
                                 <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
-                                <option value="BNBUSDT" ${params.symbol === 'BNBUSDT' ? 'selected' : ''}>BNBUSDT</option>
                             </select>
                         </div>
                         <div class="param-group">
@@ -4125,9 +4117,7 @@ cooldown_seconds：冷却时间`,
                         <div class="param-group">
                             <label class="param-label">交易对</label>
                             <select class="param-input" id="param_symbol">
-                                <option value="BTCUSDT" ${params.symbol === 'BTCUSDT' ? 'selected' : ''}>BTCUSDT</option>
                                 <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
-                                <option value="BNBUSDT" ${params.symbol === 'BNBUSDT' ? 'selected' : ''}>BNBUSDT</option>
                             </select>
                         </div>
                         <div class="param-group">
@@ -4200,92 +4190,92 @@ cooldown_seconds：冷却时间`,
                     <div class="param-row">
                         <div class="param-group">
                             <label class="param-label">交易对</label>
-                            <select class="param-input" id="param_symbol">
+                            <select class="param-input" id="param-symbol-${strategy.name}">
                                 <option value="ETHUSDT" ${params.symbol === 'ETHUSDT' ? 'selected' : ''}>ETHUSDT</option>
                             </select>
                         </div>
                         <div class="param-group">
                             <label class="param-label">杠杆倍数</label>
-                            <input type="number" class="param-input" id="param_leverage" value="${params.leverage || 50}">
+                            <input type="number" class="param-input" id="param-leverage-${strategy.name}" value="${params.leverage || 50}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">建议50倍</small>
                         </div>
                     </div>
                     <div class="param-row">
                         <div class="param-group">
                             <label class="param-label">单次本金 (USDT)</label>
-                            <input type="number" class="param-input" id="param_position_value" value="${params.position_value || 20}">
+                            <input type="number" class="param-input" id="param-position_value-${strategy.name}" value="${params.position_value || 20}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">每次开仓的本金</small>
                         </div>
                         <div class="param-group">
                             <label class="param-label">止损比例</label>
-                            <input type="number" step="0.01" class="param-input" id="param_stop_loss_pct" value="${params.stop_loss_pct || 0.50}">
+                            <input type="number" step="0.01" class="param-input" id="param-stop_loss_pct-${strategy.name}" value="${params.stop_loss_pct || 0.50}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">本金亏损50%时止损</small>
                         </div>
                     </div>
                     <div class="param-row">
                         <div class="param-group">
                             <label class="param-label">第一止盈</label>
-                            <input type="number" step="0.01" class="param-input" id="param_take_profit_1" value="${params.take_profit_1 || 0.20}">
+                            <input type="number" step="0.01" class="param-input" id="param-take_profit_1-${strategy.name}" value="${params.take_profit_1 || 0.20}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">达到此比例平50%</small>
                         </div>
                         <div class="param-group">
                             <label class="param-label">第一止盈比例</label>
-                            <input type="number" step="0.1" class="param-input" id="param_take_profit_1_ratio" value="${params.take_profit_1_ratio || 0.50}">
+                            <input type="number" step="0.1" class="param-input" id="param-take_profit_1_ratio-${strategy.name}" value="${params.take_profit_1_ratio || 0.50}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">平50%仓位</small>
                         </div>
                     </div>
                     <div class="param-row">
                         <div class="param-group">
                             <label class="param-label">第二止盈</label>
-                            <input type="number" step="0.01" class="param-input" id="param_take_profit_2" value="${params.take_profit_2 || 0.30}">
+                            <input type="number" step="0.01" class="param-input" id="param-take_profit_2-${strategy.name}" value="${params.take_profit_2 || 0.30}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">达到此比例平剩余</small>
                         </div>
                         <div class="param-group">
                             <label class="param-label">挂单超时 (秒)</label>
-                            <input type="number" class="param-input" id="param_pending_timeout" value="${params.pending_timeout || 180}">
+                            <input type="number" class="param-input" id="param-pending_timeout-${strategy.name}" value="${params.pending_timeout || 180}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">3分钟不成交撤销</small>
                         </div>
                     </div>
                     <div class="param-row">
                         <div class="param-group">
                             <label class="param-label">冷却时间 (秒)</label>
-                            <input type="number" class="param-input" id="param_cooldown_seconds" value="${params.cooldown_seconds || 300}">
+                            <input type="number" class="param-input" id="param-cooldown_seconds-${strategy.name}" value="${params.cooldown_seconds || 300}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">开仓后等待时间</small>
                         </div>
                         <div class="param-group">
                             <label class="param-label">ADX阈值</label>
-                            <input type="number" step="1" class="param-input" id="param_adx_threshold" value="${params.adx_threshold || 25}">
+                            <input type="number" step="1" class="param-input" id="param-adx_threshold-${strategy.name}" value="${params.adx_threshold || 25}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">&gt;25趋势/&lt;25震荡</small>
                         </div>
                     </div>
                     <div class="param-row">
                         <div class="param-group">
                             <label class="param-label">快速EMA</label>
-                            <input type="number" class="param-input" id="param_ema_fast" value="${params.ema_fast || 9}">
+                            <input type="number" class="param-input" id="param-ema_fast-${strategy.name}" value="${params.ema_fast || 9}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">趋势模式快线</small>
                         </div>
                         <div class="param-group">
                             <label class="param-label">慢速EMA</label>
-                            <input type="number" class="param-input" id="param_ema_slow" value="${params.ema_slow || 21}">
+                            <input type="number" class="param-input" id="param-ema_slow-${strategy.name}" value="${params.ema_slow || 21}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">趋势模式慢线</small>
                         </div>
                     </div>
                     <div class="param-row">
                         <div class="param-group">
                             <label class="param-label">RSI周期</label>
-                            <input type="number" class="param-input" id="param_rsi_period" value="${params.rsi_period || 14}">
+                            <input type="number" class="param-input" id="param-rsi_period-${strategy.name}" value="${params.rsi_period || 14}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">震荡模式RSI</small>
                         </div>
                         <div class="param-group">
                             <label class="param-label">RSI超卖</label>
-                            <input type="number" class="param-input" id="param_rsi_oversold" value="${params.rsi_oversold || 30}">
+                            <input type="number" class="param-input" id="param-rsi_oversold-${strategy.name}" value="${params.rsi_oversold || 30}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">&lt;此值做多</small>
                         </div>
                     </div>
                     <div class="param-row">
                         <div class="param-group">
                             <label class="param-label">RSI超买</label>
-                            <input type="number" class="param-input" id="param_rsi_overbought" value="${params.rsi_overbought || 70}">
+                            <input type="number" class="param-input" id="param-rsi_overbought-${strategy.name}" value="${params.rsi_overbought || 70}">
                             <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">&gt;此值做空</small>
                         </div>
                         <div class="param-group">
@@ -4330,10 +4320,10 @@ cooldown_seconds：冷却时间`,
 
             // 获取当前选择的交易对
             const symbolSelect = document.getElementById('param-symbol-' + strategyName);
-            const currentSymbol = symbolSelect ? symbolSelect.value : 'BTCUSDT';
+            const currentSymbol = symbolSelect ? symbolSelect.value : 'ETHUSDT';
 
-            // 获取该交易对的预设，没有则用BTCUSDT的
-            const symbolPresets = detail.presets[currentSymbol] || detail.presets['BTCUSDT'];
+            // 获取该交易对的预设，没有则用ETHUSDT的
+            const symbolPresets = detail.presets[currentSymbol] || detail.presets['ETHUSDT'];
             if (!symbolPresets || !symbolPresets[presetType]) return;
 
             const preset = symbolPresets[presetType];

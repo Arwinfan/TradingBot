@@ -25,7 +25,7 @@ USE_TESTNET = True
 
 # ==================== 代理配置 ====================
 # HTTP 代理 (用于访问币安 API)
-HTTP_PROXY = 'http://127.0.0.1:7897'
+HTTP_PROXY = ''
 
 # ==================== 交易配置 ====================
 # 交易对列表 (期货格式: BTCUSDT 无斜杠)
@@ -34,7 +34,7 @@ SYMBOLS_SPOT = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT', 'ADA
 
 # 默认交易对
 DEFAULT_SYMBOL_SPOT = 'BTC/USDT'
-DEFAULT_SYMBOL_FUTURES = 'BTCUSDT'
+DEFAULT_SYMBOL_FUTURES = 'ETHUSDT'
 
 # 最小交易数量 (合约)
 MIN_QUANTITY = {
@@ -117,6 +117,47 @@ KLINE_INTERVALS = {
 
 DEFAULT_KLINE_INTERVAL = '1h'  # 默认K线周期
 
+# ==================== 信号扫描配置 ====================
+SIGNAL_SCANNER_ENABLED = True  # 是否启用信号扫描
+SIGNAL_SCAN_INTERVAL = 300     # 扫描间隔 (秒, 默认5分钟)
+SIGNAL_SCAN_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT']  # 扫描的交易对
+SIGNAL_SCAN_INTERVAL_KLINE = '1h'  # 扫描使用的K线周期
+SIGNAL_MIN_CONFIDENCE = 0.5    # 信号最小置信度
+SIGNAL_ENABLE_MACD = True       # 启用 MACD 信号
+SIGNAL_ENABLE_RSI = True       # 启用 RSI 信号
+SIGNAL_ENABLE_BREAKOUT = True  # 启用突破信号
+SIGNAL_RSI_OVERSOLD = 30       # RSI 超卖阈值
+SIGNAL_RSI_OVERBOUGHT = 70     # RSI 超买阈值
+SIGNAL_SCAN_CONCURRENCY = 2    # 扫描并发数
+
+# ==================== 警报配置 ====================
+ALERT_ENABLED = True            # 是否启用警报
+ALERT_CONSOLE_OUTPUT = True    # 控制台输出警报
+ALERT_SAVE_TO_FILE = True      # 保存警报到文件
+ALERT_FILE_PATH = BASE_DIR / 'data' / 'alerts.json'
+ALERT_RETENTION_DAYS = 30       # 警报保留天数
+
+# QQ Webhook 推送配置
+ALERT_QQ_ENABLED = False       # 是否启用 QQ 推送
+ALERT_QQ_WEBHOOK_URL = os.getenv('ALERT_QQ_WEBHOOK_URL', '')  # QQ Webhook URL
+ALERT_QQ_PUSH_INTERVAL = 60    # QQ 推送间隔 (秒)
+
+# 邮件推送配置
+ALERT_EMAIL_ENABLED = False     # 是否启用邮件推送
+ALERT_EMAIL_SMTP_HOST = 'smtp.gmail.com'
+ALERT_EMAIL_SMTP_PORT = 587
+ALERT_EMAIL_FROM = os.getenv('ALERT_EMAIL_FROM', '')
+ALERT_EMAIL_TO = os.getenv('ALERT_EMAIL_TO', '')
+
+# 警报级别开关
+ALERT_ENABLE_INFO = True        # 提示级警报
+ALERT_ENABLE_WARNING = True     # 警告级警报
+ALERT_ENABLE_CRITICAL = True   # 严重级警报
+
+# 警报触发阈值
+ALERT_PNL_THRESHOLD = 5.0       # 盈亏警报阈值 (%)
+ALERT_POSITION_RISK_THRESHOLD = 80.0  # 仓位风险阈值 (%)
+
 # ==================== 邮件/通知配置 (可选) ====================
 NOTIFICATION_ENABLED = False
 EMAIL_SMTP_HOST = 'smtp.gmail.com'
@@ -167,6 +208,39 @@ class Config:
     STRATEGY_INTERVAL = STRATEGY_INTERVAL
     STRATEGY_ENABLED = STRATEGY_ENABLED
 
+    # 信号扫描
+    SIGNAL_SCANNER_ENABLED = SIGNAL_SCANNER_ENABLED
+    SIGNAL_SCAN_INTERVAL = SIGNAL_SCAN_INTERVAL
+    SIGNAL_SCAN_SYMBOLS = SIGNAL_SCAN_SYMBOLS
+    SIGNAL_SCAN_INTERVAL_KLINE = SIGNAL_SCAN_INTERVAL_KLINE
+    SIGNAL_MIN_CONFIDENCE = SIGNAL_MIN_CONFIDENCE
+    SIGNAL_ENABLE_MACD = SIGNAL_ENABLE_MACD
+    SIGNAL_ENABLE_RSI = SIGNAL_ENABLE_RSI
+    SIGNAL_ENABLE_BREAKOUT = SIGNAL_ENABLE_BREAKOUT
+    SIGNAL_RSI_OVERSOLD = SIGNAL_RSI_OVERSOLD
+    SIGNAL_RSI_OVERBOUGHT = SIGNAL_RSI_OVERBOUGHT
+    SIGNAL_SCAN_CONCURRENCY = SIGNAL_SCAN_CONCURRENCY
+
+    # 警报
+    ALERT_ENABLED = ALERT_ENABLED
+    ALERT_CONSOLE_OUTPUT = ALERT_CONSOLE_OUTPUT
+    ALERT_SAVE_TO_FILE = ALERT_SAVE_TO_FILE
+    ALERT_FILE_PATH = ALERT_FILE_PATH
+    ALERT_RETENTION_DAYS = ALERT_RETENTION_DAYS
+    ALERT_QQ_ENABLED = ALERT_QQ_ENABLED
+    ALERT_QQ_WEBHOOK_URL = ALERT_QQ_WEBHOOK_URL
+    ALERT_QQ_PUSH_INTERVAL = ALERT_QQ_PUSH_INTERVAL
+    ALERT_EMAIL_ENABLED = ALERT_EMAIL_ENABLED
+    ALERT_EMAIL_SMTP_HOST = ALERT_EMAIL_SMTP_HOST
+    ALERT_EMAIL_SMTP_PORT = ALERT_EMAIL_SMTP_PORT
+    ALERT_EMAIL_FROM = ALERT_EMAIL_FROM
+    ALERT_EMAIL_TO = ALERT_EMAIL_TO
+    ALERT_ENABLE_INFO = ALERT_ENABLE_INFO
+    ALERT_ENABLE_WARNING = ALERT_ENABLE_WARNING
+    ALERT_ENABLE_CRITICAL = ALERT_ENABLE_CRITICAL
+    ALERT_PNL_THRESHOLD = ALERT_PNL_THRESHOLD
+    ALERT_POSITION_RISK_THRESHOLD = ALERT_POSITION_RISK_THRESHOLD
+
     @classmethod
     def is_configured(cls):
         """检查是否已配置API密钥"""
@@ -202,3 +276,50 @@ class Config:
             base = symbol[:-4]
             quote = symbol[-4:]
             return f"{base}/{quote}"
+    
+    @classmethod
+    def get_alert_config(cls):
+        """获取警报配置"""
+        from signals.alert_manager import AlertConfig
+        return AlertConfig(
+            enabled=cls.ALERT_ENABLED,
+            console_output=cls.ALERT_CONSOLE_OUTPUT,
+            save_to_file=cls.ALERT_SAVE_TO_FILE,
+            alert_file=str(cls.ALERT_FILE_PATH),
+            retention_days=cls.ALERT_RETENTION_DAYS,
+            qq_enabled=cls.ALERT_QQ_ENABLED,
+            qq_webhook_url=cls.ALERT_QQ_WEBHOOK_URL,
+            qq_push_interval=cls.ALERT_QQ_PUSH_INTERVAL,
+            email_enabled=cls.ALERT_EMAIL_ENABLED,
+            email_smtp_host=cls.ALERT_EMAIL_SMTP_HOST,
+            email_smtp_port=cls.ALERT_EMAIL_SMTP_PORT,
+            email_from=cls.ALERT_EMAIL_FROM,
+            email_to=cls.ALERT_EMAIL_TO,
+            enable_info=cls.ALERT_ENABLE_INFO,
+            enable_warning=cls.ALERT_ENABLE_WARNING,
+            enable_critical=cls.ALERT_ENABLE_CRITICAL,
+        )
+    
+    @classmethod
+    def get_scanner_config(cls):
+        """获取信号扫描器配置"""
+        from signals.signal_scanner import ScannerConfig
+        return ScannerConfig(
+            symbols=cls.SIGNAL_SCAN_SYMBOLS,
+            interval=cls.SIGNAL_SCAN_INTERVAL_KLINE,
+            concurrency=cls.SIGNAL_SCAN_CONCURRENCY,
+            min_confidence=cls.SIGNAL_MIN_CONFIDENCE,
+            enable_macd=cls.SIGNAL_ENABLE_MACD,
+            enable_rsi=cls.SIGNAL_ENABLE_RSI,
+            enable_breakout=cls.SIGNAL_ENABLE_BREAKOUT,
+            rsi_oversold=cls.SIGNAL_RSI_OVERSOLD,
+            rsi_overbought=cls.SIGNAL_RSI_OVERBOUGHT,
+            scan_interval=cls.SIGNAL_SCAN_INTERVAL,
+        )
+
+
+# Config Module
+from .settings import Config
+from .strategies import StrategyConfig
+
+__all__ = ['Config', 'StrategyConfig']

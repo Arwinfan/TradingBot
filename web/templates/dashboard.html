@@ -596,18 +596,36 @@
             gap: 8px;
         }
 
+        .funding-two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .funding-column {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .funding-column {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 240px;
+            overflow: hidden;
+        }
+
         .funding-list {
-            max-height: 200px;
-            overflow-y: auto;
+            overflow: hidden;
         }
 
         .funding-list::-webkit-scrollbar {
-            width: 4px;
+            display: none;
         }
 
         .funding-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 2px;
+            display: none;
         }
 
         .funding-section-header {
@@ -681,6 +699,42 @@
         /* 账户卡片 */
         .account-card {
             padding: 24px;
+        }
+
+        /* 警报概览卡片 */
+        .alert-overview-card {
+            padding: 20px 24px;
+        }
+
+        .alert-stats-row {
+            display: flex;
+            justify-content: space-around;
+            gap: 16px;
+        }
+
+        .alert-stat {
+            text-align: center;
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: var(--radius-md);
+        }
+
+        .alert-stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-teal);
+        }
+
+        .alert-stat-value.text-info { color: var(--accent-blue); }
+        .alert-stat-value.text-warning { color: var(--accent-yellow); }
+        .alert-stat-value.text-danger { color: var(--accent-red); }
+
+        .alert-stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 4px;
         }
 
         .account-header {
@@ -1733,6 +1787,51 @@
             </div>
         </div>
 
+        <!-- 警报卡片 -->
+        <div class="glass-card alert-overview-card animate-in delay-2" style="margin-bottom: 24px;">
+            <div class="card-header">
+                <i class="bi bi-bell"></i>
+                警报中心
+                <span class="badge bg-danger ms-2" id="criticalBadge" style="display:none;">0 严重</span>
+                <span class="badge bg-warning ms-2" id="unackBadge" style="display:none;">0 未读</span>
+            </div>
+            <div class="alert-overview-content" id="alertOverview">
+                <div class="alert-stats-row">
+                    <div class="alert-stat">
+                        <div class="alert-stat-value" id="totalAlerts">0</div>
+                        <div class="alert-stat-label">总警报</div>
+                    </div>
+                    <div class="alert-stat">
+                        <div class="alert-stat-value text-info" id="signalAlerts">0</div>
+                        <div class="alert-stat-label">信号</div>
+                    </div>
+                    <div class="alert-stat">
+                        <div class="alert-stat-value text-warning" id="riskAlerts">0</div>
+                        <div class="alert-stat-label">风控</div>
+                    </div>
+                    <div class="alert-stat">
+                        <div class="alert-stat-value text-danger" id="unackAlerts">0</div>
+                        <div class="alert-stat-label">未读</div>
+                    </div>
+                </div>
+                <div id="latestAlert" style="display:none; margin-top: 16px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px;">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">最新警报</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span id="latestAlertTitle" style="font-weight: 600;"></span>
+                            <span id="latestAlertSymbol" style="font-size: 12px; color: var(--text-muted); margin-left: 8px;"></span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="acknowledgeLatestAlert()">确认</button>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; text-align: center;">
+                    <a href="/signals" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-box-arrow-up-right"></i> 查看全部
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <!-- 账户和持仓 -->
         <div class="row g-4">
             <div class="col-lg-4 animate-in delay-2">
@@ -1815,7 +1914,7 @@
     <!-- 交易系统JS -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script>
-        let currentSymbol = 'BTCUSDT';
+        let currentSymbol = 'ETHUSDT';
         let currentTimeframe = '1h';
         let priceChart = null;
         let refreshInterval = null;
@@ -1852,6 +1951,7 @@
                     updateStrategies(data.strategies);
                     updateSystemStatus(data);
                     updateDanmu(data.tickers);
+                    loadAlerts();  // 加载警报
                 }
             } catch (error) {
                 console.error('加载数据失败:', error);
@@ -1872,7 +1972,7 @@
                 'DOGEUSDT': 'doge',
                 'DOTUSDT': 'dot'
             };
-            const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'DOTUSDT'];
+            const symbols = ['ETHUSDT'];
             symbols.forEach(symbol => {
                 const ticker = tickers[symbol];
                 if (ticker) {
@@ -1891,7 +1991,7 @@
         }
 
         function updateDanmu(tickers) {
-            const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'DOTUSDT'];
+            const symbols = ['ETHUSDT'];
             let row1 = '';
             let row2 = '';
 
@@ -1922,6 +2022,75 @@
             document.getElementById('danmu-row-2').innerHTML = row2 + row2;
         }
 
+        // ==================== 警报加载 ====================
+        let latestAlertId = null;
+
+        async function loadAlerts() {
+            try {
+                const resp = await fetch('/api/alerts');
+                const data = await resp.json();
+                
+                if (data.success) {
+                    // 更新统计
+                    document.getElementById('totalAlerts').textContent = data.count || 0;
+                    document.getElementById('unackAlerts').textContent = data.unacknowledged_count || 0;
+                    document.getElementById('criticalCount').textContent = data.critical_count || 0;
+                    
+                    // 分类统计
+                    let signalCount = 0;
+                    let riskCount = 0;
+                    data.alerts?.forEach(alert => {
+                        if (alert.type === 'signal') signalCount++;
+                        if (alert.type === 'risk_limit' || alert.level === 'critical') riskCount++;
+                    });
+                    document.getElementById('signalAlerts').textContent = signalCount;
+                    document.getElementById('riskAlerts').textContent = riskCount;
+                    
+                    // 徽章
+                    const criticalBadge = document.getElementById('criticalBadge');
+                    const unackBadge = document.getElementById('unackBadge');
+                    if (data.critical_count > 0) {
+                        criticalBadge.style.display = 'inline-block';
+                        criticalBadge.textContent = data.critical_count + ' 严重';
+                    } else {
+                        criticalBadge.style.display = 'none';
+                    }
+                    if (data.unacknowledged_count > 0) {
+                        unackBadge.style.display = 'inline-block';
+                        unackBadge.textContent = data.unacknowledged_count + ' 未读';
+                    } else {
+                        unackBadge.style.display = 'none';
+                    }
+                    
+                    // 最新警报
+                    const unackAlerts = data.alerts?.filter(a => !a.acknowledged) || [];
+                    if (unackAlerts.length > 0) {
+                        const latest = unackAlerts[0];
+                        latestAlertId = latest.id;
+                        const latestAlertEl = document.getElementById('latestAlert');
+                        latestAlertEl.style.display = 'block';
+                        document.getElementById('latestAlertTitle').textContent = latest.title;
+                        document.getElementById('latestAlertSymbol').textContent = latest.symbol ? latest.symbol : '';
+                    } else {
+                        document.getElementById('latestAlert').style.display = 'none';
+                    }
+                }
+            } catch (e) {
+                console.error('加载警报失败:', e);
+            }
+        }
+
+        async function acknowledgeLatestAlert() {
+            if (!latestAlertId) return;
+            try {
+                await fetch(`/api/alerts/${latestAlertId}/acknowledge`, { method: 'POST' });
+                loadAlerts();
+            } catch (e) {
+                console.error('确认警报失败:', e);
+            }
+        }
+
+        // ==================== 资金费率加载 ====================
         async function loadFundingRates() {
             try {
                 const response = await fetch('/api/funding-rates');
@@ -1951,33 +2120,37 @@
             const positive = items.filter(item => item.rate > 0).sort((a, b) => b.rate - a.rate).slice(0, 10);
             const negative = items.filter(item => item.rate < 0).sort((a, b) => a.rate - b.rate).slice(0, 10);
 
-            let html = '<div class="funding-content">';
-
-            // 正费率前10
-            if (positive.length > 0) {
-                html += '<div class="funding-section-header positive"><span>资金费率正</span><span>Taker付费</span></div>';
-                html += '<div class="funding-list">';
-                positive.forEach(item => {
-                    html += renderFundingItem(item);
-                });
-                html += '</div>';
-            }
-
-            // 负费率前10
-            if (negative.length > 0) {
-                html += '<div class="funding-section-header negative"><span>资金费率负</span><span>Maker收益</span></div>';
-                html += '<div class="funding-list">';
-                negative.forEach(item => {
-                    html += renderFundingItem(item);
-                });
-                html += '</div>';
-            }
-
+            // 如果正负都为空
             if (positive.length === 0 && negative.length === 0) {
-                html += '<div class="funding-empty">暂无数据</div>';
+                container.innerHTML = '<div class="funding-empty">暂无数据</div>';
+                return;
             }
 
-            html += '</div>';
+            let html = '<div class="funding-content"><div class="funding-two-columns">';
+
+            // 左列：正费率
+            html += '<div class="funding-column">';
+            html += '<div class="funding-section-header positive"><span>资金费率正</span><span>Taker付费</span></div>';
+            html += '<div class="funding-list">';
+            if (positive.length > 0) {
+                positive.forEach(item => { html += renderFundingItem(item); });
+            } else {
+                html += '<div class="funding-empty">暂无</div>';
+            }
+            html += '</div></div>';
+
+            // 右列：负费率
+            html += '<div class="funding-column">';
+            html += '<div class="funding-section-header negative"><span>资金费率负</span><span>Maker收益</span></div>';
+            html += '<div class="funding-list">';
+            if (negative.length > 0) {
+                negative.forEach(item => { html += renderFundingItem(item); });
+            } else {
+                html += '<div class="funding-empty">暂无</div>';
+            }
+            html += '</div></div>';
+
+            html += '</div></div>';
             container.innerHTML = html;
         }
 
