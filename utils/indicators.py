@@ -4,6 +4,8 @@
 
 from typing import List, Tuple
 import numpy as np
+import pandas as pd
+from numpy import where
 
 
 def calculate_ema(prices: List[float], period: int) -> List[float]:
@@ -262,3 +264,44 @@ def calculate_stochastic(highs: List[float], lows: List[float],
     d_values = calculate_sma(k_values, d_period)
 
     return k_values, d_values
+
+
+def calculate_adx(df, period: int = 14) -> pd.Series:
+    """
+    计算平均趋向指数 (ADX)
+    
+    Args:
+        df: 包含high, low, close列的DataFrame
+        period: 计算周期
+        
+    Returns:
+        ADX序列
+    """
+    high = df['high']
+    low = df['low']
+    close = df['close']
+    
+    # 计算 True Range
+    tr1 = high - low
+    tr2 = abs(high - close.shift(1))
+    tr3 = abs(low - close.shift(1))
+    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+    
+    # 计算 +DM 和 -DM
+    up_move = high.diff()
+    down_move = -low.diff()
+    
+    plus_dm = where((up_move > down_move) & (up_move > 0), up_move, 0)
+    minus_dm = where((down_move > up_move) & (down_move > 0), down_move, 0)
+    
+    # 计算平滑的DM和TR
+    atr = tr.rolling(period).mean()
+    plus_di = 100 * pd.Series(plus_dm).rolling(period).mean() / atr
+    minus_di = 100 * pd.Series(minus_dm).rolling(period).mean() / atr
+    
+    # 计算DX
+    dx = 100 * abs(plus_di - minus_di) / (plus_di + minus_di)
+    
+    # 计算ADX
+    adx = dx.rolling(period).mean()
+    return adx
